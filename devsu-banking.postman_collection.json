@@ -1,0 +1,337 @@
+{
+	"info": {
+		"_postman_id": "8a3f8901-4467-4284-9bc0-884877196011",
+		"name": "Devsu Banking Microservices (.NET 9)",
+		"description": "Colección oficial de pruebas de integración de endpoints REST para el reto de Devsu (F1 a F4). Cumple la convención de variables {{servidor}} y {{puerto}} con aserciones automáticas para Newman CLI.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "F1 - Clientes",
+			"item": [
+				{
+					"name": "Crear Cliente (Jose Lema)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code es 201 Created\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"pm.test(\"Cliente contiene nombre y no expone contrasena\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.nombre).to.eql(\"Jose Lema\");",
+									"    pm.expect(jsonData.contrasena).to.be.undefined;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Jose Lema\",\n  \"genero\": \"Masculino\",\n  \"edad\": 35,\n  \"identificacion\": \"1234567890\",\n  \"direccion\": \"Otavalo sn y principal\",\n  \"telefono\": \"098254785\",\n  \"contrasena\": \"1234\",\n  \"estado\": true\n}"
+						},
+						"url": {
+							"raw": "{{servidor}}:{{puerto_cliente}}/clientes",
+							"host": [
+								"{{servidor}}"
+							],
+							"port": "{{puerto_cliente}}",
+							"path": [
+								"clientes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Clientes",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code es 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Retorna lista no vacia de clientes\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an(\"array\").that.is.not.empty;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{servidor}}:{{puerto_cliente}}/clientes",
+							"host": [
+								"{{servidor}}"
+							],
+							"port": "{{puerto_cliente}}",
+							"path": [
+								"clientes"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "F1 - Cuentas",
+			"item": [
+				{
+					"name": "Crear Cuenta (478758 - Jose Lema)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code es 201 Created\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"pm.test(\"Cuenta creada con numero 478758\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.numeroCuenta).to.eql(\"478758\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"numeroCuenta\": \"478758\",\n  \"tipoCuenta\": \"Ahorros\",\n  \"saldoInicial\": 2000.00,\n  \"estado\": true,\n  \"clienteId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{servidor}}:{{puerto_cuenta}}/cuentas",
+							"host": [
+								"{{servidor}}"
+							],
+							"port": "{{puerto_cuenta}}",
+							"path": [
+								"cuentas"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Cuenta por Numero",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code es 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Cuenta 478758 verificada\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.numeroCuenta).to.eql(\"478758\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{servidor}}:{{puerto_cuenta}}/cuentas/478758",
+							"host": [
+								"{{servidor}}"
+							],
+							"port": "{{puerto_cuenta}}",
+							"path": [
+								"cuentas",
+								"478758"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "F2 / F3 - Movimientos",
+			"item": [
+				{
+					"name": "Registrar Retiro Valido (-575.00)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code es 201 Created\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"pm.test(\"Saldo remanente es 1425.00\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.saldo).to.eql(1425.00);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"numeroCuenta\": \"478758\",\n  \"valor\": -575.00\n}"
+						},
+						"url": {
+							"raw": "{{servidor}}:{{puerto_cuenta}}/movimientos",
+							"host": [
+								"{{servidor}}"
+							],
+							"port": "{{puerto_cuenta}}",
+							"path": [
+								"movimientos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "EB-01 Retiro Mayor al Saldo (Saldo no disponible)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code es 400 Bad Request\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"pm.test(\"Mensaje exacto 'Saldo no disponible'\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.mensaje || jsonData.detail || pm.response.text()).to.include(\"Saldo no disponible\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"numeroCuenta\": \"478758\",\n  \"valor\": -5000.00\n}"
+						},
+						"url": {
+							"raw": "{{servidor}}:{{puerto_cuenta}}/movimientos",
+							"host": [
+								"{{servidor}}"
+							],
+							"port": "{{puerto_cuenta}}",
+							"path": [
+								"movimientos"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "F4 - Reportes",
+			"item": [
+				{
+					"name": "Reporte Estado de Cuenta",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code es 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Reporte contiene registros del cliente Jose Lema\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an(\"array\").that.is.not.empty;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{servidor}}:{{puerto_cuenta}}/reportes?fecha=2022-01-01,2026-12-31&cliente=Jose Lema",
+							"host": [
+								"{{servidor}}"
+							],
+							"port": "{{puerto_cuenta}}",
+							"path": [
+								"reportes"
+							],
+							"query": [
+								{
+									"key": "fecha",
+									"value": "2022-01-01,2026-12-31"
+								},
+								{
+									"key": "cliente",
+									"value": "Jose Lema"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "servidor",
+			"value": "http://localhost"
+		},
+		{
+			"key": "puerto_cliente",
+			"value": "8081"
+		},
+		{
+			"key": "puerto_cuenta",
+			"value": "8083"
+		}
+	]
+}

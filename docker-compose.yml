@@ -1,0 +1,117 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: devsu-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-devsu_db_secret_pass}
+      POSTGRES_DB_CLIENTES: ${POSTGRES_DB_CLIENTES:-devsu_clientes}
+      POSTGRES_DB_CUENTAS: ${POSTGRES_DB_CUENTAS:-devsu_cuentas}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/init-db/00-init-databases.sh:/docker-entrypoint-initdb.d/00-init-databases.sh:ro
+      - ./docker/init-db/sql:/docker-init-sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - devsu-network
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: devsu-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-devsu_admin}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-devsu_rabbit_secret_pass}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - devsu-network
+
+  cliente-service:
+    build:
+      context: .
+      dockerfile: src/ClienteService/Dockerfile
+    image: devsu-cliente-service:latest
+    container_name: devsu-cliente-service
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__PostgresDb: "Host=postgres;Port=5432;Database=${POSTGRES_DB_CLIENTES:-devsu_clientes};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-devsu_db_secret_pass}"
+      RabbitMq__Host: "rabbitmq"
+      RabbitMq__Port: "5672"
+      RabbitMq__User: "${RABBITMQ_DEFAULT_USER:-devsu_admin}"
+      RabbitMq__Password: "${RABBITMQ_DEFAULT_PASS:-devsu_rabbit_secret_pass}"
+    ports:
+      - "8081:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - devsu-network
+
+  cuenta-service:
+    build:
+      context: .
+      dockerfile: src/CuentaMovimientoService/Dockerfile
+    image: devsu-cuenta-service:latest
+    container_name: devsu-cuenta-service
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__PostgresDb: "Host=postgres;Port=5432;Database=${POSTGRES_DB_CUENTAS:-devsu_cuentas};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-devsu_db_secret_pass}"
+      RabbitMq__Host: "rabbitmq"
+      RabbitMq__Port: "5672"
+      RabbitMq__User: "${RABBITMQ_DEFAULT_USER:-devsu_admin}"
+      RabbitMq__Password: "${RABBITMQ_DEFAULT_PASS:-devsu_rabbit_secret_pass}"
+    ports:
+      - "8083:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - devsu-network
+
+  # Visor web opcional de base de datos
+  pgweb:
+    image: sosedoff/pgweb:latest
+    container_name: devsu-pgweb
+    restart: unless-stopped
+    ports:
+      - "8089:8081"
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-devsu_db_secret_pass}@postgres:5432/${POSTGRES_DB_CLIENTES:-devsu_clientes}?sslmode=disable
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - devsu-network
+
+volumes:
+  postgres_data:
+    name: devsu_postgres_data
+  rabbitmq_data:
+    name: devsu_rabbitmq_data
+
+networks:
+  devsu-network:
+    name: devsu_network
+    driver: bridge

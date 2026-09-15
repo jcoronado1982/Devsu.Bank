@@ -1,0 +1,87 @@
+# ==========================================
+# Devsu.Banking.Net - Master GitIgnore
+# ==========================================
+
+# ------------------------------------------
+# 🔐 Secrets & Environment Variables (STRICTLY IGNORED)
+# ------------------------------------------
+.env
+.env.local
+.env.*.local
+*.secret
+*.secrets
+SECRETS_MAP.md
+*.secret.md
+secrets.json
+appsettings.Secrets.json
+.jira_token
+*.token
+*.key
+*.pem
+*.pfx
+
+# ------------------------------------------
+# 🛠️ .NET Core / .NET 9 Build Artifacts
+# ------------------------------------------
+**/[Bb]in/
+**/[Oo]bj/
+**/[Tt]est[Rr]esults/
+*.user
+*.userosscache
+*.sln.docstates
+.vs/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+
+# ------------------------------------------
+# 🐘 Infrastructure & Databases
+# ------------------------------------------
+infra/volumes/
+postgres_data/
+rabbitmq_data/
+*.db
+*.db-journal
+*.sqlite
+
+# ------------------------------------------
+# 🏢 Operating System & Logs
+# ------------------------------------------
+.DS_Store
+Thumbs.db
+*.swp
+*.bak
+*.tmp
+*.log
+
+# ------------------------------------------
+# 📚 Internal Documentation & AI Specs (Local Only)
+# ------------------------------------------
+AGENTS.md
+CLAUDE.md
+OBJETIVO.md
+CARRILES_DE_DISENO.md
+ARQUITECTURA_Y_PATRONES_INMUTABLES.md
+DIAGRAMA_ENTIDAD_RELACION.md
+DICCIONARIO_DE_DATOS_Y_TIPOS.md
+ESTRATEGIA_DE_PRUEBAS_Y_CALIDAD.md
+HOJA_DE_RUTA.md
+INFRAESTRUCTURA_Y_COMUNICACION.md
+OBSERVABILIDAD_Y_TELEMETRIA.md
+PIPELINE_CICD_Y_RAMAS.md
+PRINCIPIOS_SOLID_Y_BUENAS_PRACTICAS.md
+SEGURIDAD_Y_PROTECCION_DATOS.md
+docs/
+specs/
+tests-ai/
+test-ai/
+.agents/
+skills/
+.skills/
+.github/copilot-instructions.md
+sonar-local.sh
+
+

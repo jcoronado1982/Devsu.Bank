@@ -1,0 +1,60 @@
+# =========================================================================
+# .cursorrules - Directrices Inmutables para Cursor / ChatGPT / Copilot
+# =========================================================================
+
+# 1. IDENTIDAD Y ALCANCE
+Eres el Asistente Experto en .NET 9 y Arquitectura Limpia para el proyecto bancario Devsu.Banking.Net.
+Debes leer y respetar fielmente las reglas de AGENTS.md, ARQUITECTURA_Y_PATRONES_INMUTABLES.md y PRINCIPIOS_SOLID_Y_BUENAS_PRACTICAS.md.
+
+# 2. STACK TECNOLÓGICO OBLIGATORIO
+- Lenguaje: C# 13 / .NET 9 (net9.0).
+- Persistencia: Entity Framework Core 9 con PostgreSQL (Npgsql). Fluent API obligatorio.
+- Mensajería: MassTransit 8 con RabbitMQ.
+- Testing: xUnit, FluentAssertions, Testcontainers.PostgreSql.
+- Prohibido terminantemente usar Java o Spring Boot.
+
+# 3. DUALIDAD ARQUITECTÓNICA
+- Nivel Macro: 2 microservicios desacoplados (ClienteService y CuentaMovimientoService).
+  - Cero llamadas HTTP directas entre ellos.
+  - Comunicación exclusiva vía eventos asíncronos en RabbitMQ.
+- Nivel Micro: Clean Architecture en cada microservicio:
+  - *.Domain: Entidades POCO puras, cero dependencias técnicas.
+  - *.Application: Casos de uso, DTOs y Puertos (interfaces: IClienteRepository, ICuentaRepository, IEventBus).
+  - *.Infrastructure: Adaptadores EF Core 9 y MassTransit.
+  - *.Api: Controladores REST delgados y middlewares.
+
+# 4. CICLOS DE VIDA EN INYECCIÓN DE DEPENDENCIAS
+- AddScoped: DbContext, Repositorios, UnitOfWork, Application Services.
+- AddSingleton: RabbitMQ Bus, IPasswordHasher (BCrypt), configuraciones IOptions.
+- AddTransient: Validadores IMovimientoValidator y mappers stateless.
+
+# 5. REGLAS FINANCIERAS Y LENGUAJE
+- Moneda: Siempre decimal en C# y NUMERIC(18, 2) en PostgreSQL. Redondeo: MidpointRounding.AwayFromZero.
+- Endpoints y JSON: Estrictamente en ESPAÑOL (/clientes, /cuentas, /movimientos, /reportes, numeroCuenta, saldoInicial, etc.).
+- Mensajes de error exactos:
+  - "Saldo no disponible" (HTTP 400).
+  - "Cupo diario Excedido" (HTTP 400).
+  - "Cuenta inactiva" (HTTP 400).
+  - "Cliente no encontrado" (HTTP 404).
+
+# 6. SEGURIDAD BANCARIA Y PROTECCIÓN DE DATOS (OWASP & CERO FUGAS)
+- Cero contraseñas en texto plano: Hasheo obligatorio con BCrypt (WorkFactor 12) antes de persistir.
+- Sanitización de DTOs: Jamás retornar contraseña o hash en respuestas JSON (GET /clientes).
+- Protección contra Overposting: saldoActual jamás se recibe en requests JSON; se calcula por movimientos.
+- Cero Inyección SQL: Consultas parametrizadas en EF Core 9. Prohibido concatenar SQL en bruto.
+- Ver guía obligatoria: SEGURIDAD_Y_PROTECCION_DATOS.md.
+
+# 7. OBSERVABILIDAD Y TRAZABILIDAD DE PUNTA A PUNTA (OPENTELEMETRY & ASPIRE)
+- OpenTelemetry universal: Logs estructurados con ILogger semántico, métricas y trazas distribuidas.
+- Trazabilidad continua: Propagación W3C traceparent a través de HTTP -> EF Core (Npgsql) -> RabbitMQ (MassTransit).
+- Health Checks obligatorios: /health y /alive en ambos microservicios.
+- Ver guía obligatoria: OBSERVABILIDAD_Y_TELEMETRIA.md.
+
+# 8. INMUTABILIDAD DE TESTS
+- Prohibido modificar o debilitar los tests existentes para forzar que pasen. Si un test falla, arregla el código de producción.
+
+# 9. COMANDOS DE VERIFICACIÓN
+- dotnet build --no-incremental
+- dotnet test
+
+

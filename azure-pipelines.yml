@@ -1,0 +1,222 @@
+# =========================================================================
+# Azure DevOps CI/CD Pipeline - Devsu Banking Microservices (.NET 9)
+#
+# Diseno de 3 etapas: Integracion Continua -> Empaquetado y Publicacion en
+# ACR -> Despliegue a Produccion (VM GCP existente) via SSH. ESTADO ACTUAL
+# (2026-09-15): solo la etapa CI esta activa y verificada en verde; las
+# etapas 2 y 3 estan comentadas mas abajo (codigo completo conservado) en
+# espera de que se creen las Service Connections/secure file pendientes.
+# Ver PIPELINE_CICD_Y_RAMAS.md seccion 3 para el estado exacto y los pasos
+# que faltan.
+#
+# AGENTE: 'LocalBuild' (self-hosted, misma maquina/pool que usa el proyecto
+# flashcard en esta misma organizacion). La organizacion 'safejcoronado1982'
+# no tiene parallel jobs de Microsoft-hosted habilitados, por eso NINGUN
+# job de este pipeline usa 'vmImage' — todos corren en el agente self-hosted
+# ya registrado y autorizado para el proyecto 'theruby'.
+#
+# CONFIGURACION MANUAL REQUERIDA EN AZURE DEVOPS (una sola vez, fuera de
+# este archivo, ya que involucra secretos reales que no pueden vivir en
+# el repositorio — ver PIPELINE_CICD_Y_RAMAS.md para la guia paso a paso):
+#   1. Service Connection de tipo "Docker Registry" hacia Azure Container
+#      Registry, nombrada 'devsu-acr-connection'.
+#   2. Service Connection de tipo "SSH" hacia la VM de GCP, nombrada
+#      'devsu-gcp-ssh-connection'.
+#   3. Archivo seguro (Library > Secure Files) con el .env de produccion
+#      (POSTGRES_PASSWORD, RABBITMQ_DEFAULT_PASS, ACR_LOGIN_SERVER, etc.),
+#      nombrado 'devsu-prod.env'.
+#   4. Un Environment de Azure DevOps llamado 'produccion-devsu-banking'
+#      con un "Approval" (aprobacion manual) configurado, para que nadie
+#      despliegue a produccion sin que un humano lo apruebe.
+#   5. Variable de pipeline 'acrLoginServer' con el login server del ACR
+#      (ej: devsubanking.azurecr.io).
+# =========================================================================
+name: $(date:yyyyMMdd)$(rev:.r)
+
+trigger:
+  branches:
+    include:
+      - main
+      - dev
+  paths:
+    exclude:
+      - 'README.md'
+      - 'docs/**'
+      - '*.md'
+
+pr:
+  branches:
+    include:
+      - main
+      - dev
+
+variables:
+  dotnetVersion: '9.0.x'
+  buildConfiguration: 'Release'
+  imageRepositoryCliente: 'devsu-cliente-service'
+  imageRepositoryCuenta: 'devsu-cuenta-service'
+  dockerRegistryServiceConnection: 'devsu-acr-connection'
+  sshServiceConnection: 'devsu-gcp-ssh-connection'
+  tag: '$(Build.BuildId)'
+
+stages:
+  # =======================================================================
+  # ETAPA 1: INTEGRACION CONTINUA (Build & Test)
+  # =======================================================================
+  - stage: CI
+    displayName: 'Integracion Continua (Build & Test)'
+    jobs:
+      - job: BuildAndTest
+        displayName: 'Compilar y Ejecutar Tests Automatizados'
+        pool:
+          name: 'LocalBuild'
+        steps:
+          - task: UseDotNet@2
+            displayName: 'Instalar .NET SDK $(dotnetVersion)'
+            inputs:
+              packageType: 'sdk'
+              version: '$(dotnetVersion)'
+
+          - task: DotNetCoreCLI@2
+            displayName: 'Restaurar paquetes NuGet'
+            inputs:
+              command: 'restore'
+              projects: '**/*.sln'
+
+          - task: DotNetCoreCLI@2
+            displayName: 'Compilar solucion (.NET 9 Release)'
+            inputs:
+              command: 'build'
+              projects: '**/*.sln'
+              arguments: '--configuration $(buildConfiguration) --no-restore'
+
+          - task: DotNetCoreCLI@2
+            displayName: 'Pruebas de Arquitectura (NetArchTest)'
+            inputs:
+              command: 'test'
+              projects: 'tests/ArchitectureTests/*.csproj'
+              arguments: '--configuration $(buildConfiguration) --logger trx'
+              publishTestResults: true
+
+          - task: DotNetCoreCLI@2
+            displayName: 'Pruebas Unitarias ClienteService'
+            inputs:
+              command: 'test'
+              projects: 'tests/ClienteService.UnitTests/*.csproj'
+              arguments: '--configuration $(buildConfiguration) --logger trx'
+              publishTestResults: true
+
+          - task: DotNetCoreCLI@2
+            displayName: 'Pruebas Unitarias CuentaMovimientoService'
+            inputs:
+              command: 'test'
+              projects: 'tests/CuentaMovimientoService.UnitTests/*.csproj'
+              arguments: '--configuration $(buildConfiguration) --logger trx'
+              publishTestResults: true
+
+          - task: DotNetCoreCLI@2
+            displayName: 'Pruebas de Integracion (Testcontainers, PostgreSQL 16 efimero)'
+            inputs:
+              command: 'test'
+              projects: 'tests/CuentaMovimientoService.IntegrationTests/*.csproj'
+              arguments: '--configuration $(buildConfiguration) --logger trx'
+              publishTestResults: true
+
+  # =======================================================================
+  # ETAPAS 2 y 3 (DESACTIVADAS): empaquetado en ACR y despliegue a GCP.
+  #
+  # Se comentaron el 2026-09-15 porque Azure DevOps valida TODAS las
+  # referencias a Service Connections/Environments del YAML antes de
+  # ejecutar CUALQUIER etapa — con 'devsu-acr-connection',
+  # 'devsu-gcp-ssh-connection' y 'devsu-prod.env' todavia sin crear, el
+  # pipeline entero (incluida la etapa CI) fallaba en validacion sin
+  # llegar a correr un solo test. El Environment 'produccion-devsu-banking'
+  # ya se creo; faltan los otros 3 puntos de PIPELINE_CICD_Y_RAMAS.md
+  # seccion 3 (Service Connection ACR, Service Connection SSH, secure
+  # file). En cuanto existan, descomentar este bloque completo reactiva
+  # el empaquetado y despliegue real — el codigo no cambio, solo esta
+  # inactivo.
+  # =======================================================================
+  # - stage: BuildAndPushContainers
+  #   displayName: 'Construir y Publicar Imagenes en ACR'
+  #   dependsOn: CI
+  #   condition: and(succeeded(), in(variables['Build.SourceBranch'], 'refs/heads/main', 'refs/heads/dev'))
+  #   jobs:
+  #     - job: DockerBuildPush
+  #       displayName: 'Build & Push de ambos microservicios'
+  #       pool:
+  #         name: 'LocalBuild'
+  #       steps:
+  #         - task: Docker@2
+  #           displayName: 'Build & Push ClienteService'
+  #           inputs:
+  #             containerRegistry: '$(dockerRegistryServiceConnection)'
+  #             repository: '$(imageRepositoryCliente)'
+  #             command: 'buildAndPush'
+  #             Dockerfile: 'src/ClienteService/Dockerfile'
+  #             buildContext: '.'
+  #             tags: |
+  #               $(tag)
+  #               latest
+  #
+  #         - task: Docker@2
+  #           displayName: 'Build & Push CuentaMovimientoService'
+  #           inputs:
+  #             containerRegistry: '$(dockerRegistryServiceConnection)'
+  #             repository: '$(imageRepositoryCuenta)'
+  #             command: 'buildAndPush'
+  #             Dockerfile: 'src/CuentaMovimientoService/Dockerfile'
+  #             buildContext: '.'
+  #             tags: |
+  #               $(tag)
+  #               latest
+  #
+  # - stage: DeployProduction
+  #   displayName: 'Desplegar a Produccion (GCP)'
+  #   dependsOn: BuildAndPushContainers
+  #   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+  #   jobs:
+  #     - deployment: DeployToGCP
+  #       displayName: 'Deploy a servidor de produccion (GCP Alpine)'
+  #       pool:
+  #         name: 'LocalBuild'
+  #       environment: 'produccion-devsu-banking'
+  #       strategy:
+  #         runOnce:
+  #           deploy:
+  #             steps:
+  #               - task: DownloadSecureFile@1
+  #                 name: prodEnvFile
+  #                 displayName: 'Descargar .env de produccion'
+  #                 inputs:
+  #                   secureFile: 'devsu-prod.env'
+  #
+  #               - task: CopyFilesOverSSH@0
+  #                 displayName: 'Copiar docker-compose.prod.yml al servidor'
+  #                 inputs:
+  #                   sshEndpoint: '$(sshServiceConnection)'
+  #                   sourceFolder: '$(Build.SourcesDirectory)'
+  #                   contents: 'docker-compose.prod.yml'
+  #                   targetFolder: '/opt/devsu-banking'
+  #
+  #               - task: CopyFilesOverSSH@0
+  #                 displayName: 'Copiar .env de produccion al servidor'
+  #                 inputs:
+  #                   sshEndpoint: '$(sshServiceConnection)'
+  #                   sourceFolder: '$(Agent.TempDirectory)'
+  #                   contents: 'devsu-prod.env'
+  #                   targetFolder: '/opt/devsu-banking'
+  #
+  #               - task: SSH@0
+  #                 displayName: 'Pull de imagenes nuevas y reinicio de contenedores'
+  #                 inputs:
+  #                   sshEndpoint: '$(sshServiceConnection)'
+  #                   runOptions: 'inline'
+  #                   inline: |
+  #                     set -e
+  #                     cd /opt/devsu-banking
+  #                     mv devsu-prod.env .env
+  #                     echo "IMAGE_TAG=$(tag)" >> .env
+  #                     docker compose -f docker-compose.prod.yml pull
+  #                     docker compose -f docker-compose.prod.yml up -d --remove-orphans
+  #                     docker image prune -f

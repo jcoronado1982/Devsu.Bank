@@ -1,0 +1,56 @@
+name: CI/CD Pipeline (.NET 9 & Quality)
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main, dev ]
+
+jobs:
+  build-and-test:
+    name: Build, Tests & Docker Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Código
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configurar .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restaurar Paquetes NuGet
+        run: dotnet restore
+
+      - name: Compilar Solución completa en Release (src + tests)
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Pruebas de Arquitectura (NetArchTest)
+        run: |
+          dotnet test tests/ArchitectureTests/ \
+            --configuration Release \
+            --verbosity normal
+
+      - name: Pruebas Unitarias ClienteService (xUnit + FluentAssertions)
+        run: |
+          dotnet test tests/ClienteService.UnitTests/ \
+            --configuration Release \
+            --verbosity normal
+
+      - name: Pruebas Unitarias CuentaMovimientoService (xUnit + FluentAssertions)
+        run: |
+          dotnet test tests/CuentaMovimientoService.UnitTests/ \
+            --configuration Release \
+            --verbosity normal
+
+      - name: Pruebas de Integración con Testcontainers (PostgreSQL 16 efímero)
+        run: |
+          dotnet test tests/CuentaMovimientoService.IntegrationTests/ \
+            --configuration Release \
+            --verbosity normal
+
+      - name: Validar Build de Contenedores Docker (multi-stage Alpine)
+        run: docker compose build
