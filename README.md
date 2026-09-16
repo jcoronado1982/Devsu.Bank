@@ -34,8 +34,8 @@ Para validar con **Postman**, solo se debe importar la colección [`devsu-bankin
    - **Swagger Clientes:** [http://localhost:8081/swagger](http://localhost:8081/swagger)
    - **Swagger Cuentas y Movimientos:** [http://localhost:8083/swagger](http://localhost:8083/swagger)
    - **.NET Aspire Dashboard (Trazabilidad y Métricas):** [http://localhost:18888](http://localhost:18888)
-   - **RabbitMQ Dashboard:** [http://localhost:15672](http://localhost:15672) *(guest / guest)*
-   - **Visor visual de BD (PGWeb):** [http://localhost:8089](http://localhost:8089)
+   - **RabbitMQ Dashboard:** [http://localhost:15672](http://localhost:15672) *(devsu_admin / devsu_rabbit_secret_pass)*
+   - **Visores visuales de BD (PGWeb):** [http://localhost:8089](http://localhost:8089) (Clientes) | [http://localhost:8090](http://localhost:8090) (Cuentas)
 
 3. **Detener el ambiente:**
    ```bash
