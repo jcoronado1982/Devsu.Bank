@@ -1,17 +1,11 @@
-# ==========================================
-# Devsu.Banking.Net - Master GitIgnore
-# ==========================================
-
-# ------------------------------------------
-# 🔐 Secrets & Environment Variables (STRICTLY IGNORED)
-# ------------------------------------------
+# -----------------------------------------------------------------------------
+# Environment & Local Secrets
+# -----------------------------------------------------------------------------
 .env
 .env.local
 .env.*.local
 *.secret
 *.secrets
-SECRETS_MAP.md
-*.secret.md
 secrets.json
 appsettings.Secrets.json
 .jira_token
@@ -20,9 +14,9 @@ appsettings.Secrets.json
 *.pem
 *.pfx
 
-# ------------------------------------------
-# 🛠️ .NET Core / .NET 9 Build Artifacts
-# ------------------------------------------
+# -----------------------------------------------------------------------------
+# .NET / Build Artifacts
+# -----------------------------------------------------------------------------
 **/[Bb]in/
 **/[Oo]bj/
 **/[Tt]est[Rr]esults/
@@ -30,38 +24,28 @@ appsettings.Secrets.json
 *.userosscache
 *.sln.docstates
 .vs/
+.idea/
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
-.idea/
 
-# ------------------------------------------
-# 🐘 Infrastructure & Databases
-# ------------------------------------------
-infra/volumes/
-postgres_data/
-rabbitmq_data/
+# -----------------------------------------------------------------------------
+# Databases & Local Data
+# -----------------------------------------------------------------------------
 *.db
 *.db-journal
 *.sqlite
 
-# ------------------------------------------
-# 🏢 Operating System & Logs
-# ------------------------------------------
+# -----------------------------------------------------------------------------
+# Operating System & Archives
+# -----------------------------------------------------------------------------
 .DS_Store
 Thumbs.db
 *.swp
 *.bak
 *.tmp
 *.log
-
-# ------------------------------------------
-# 🏢 Local Notes & Temporary Files
-# ------------------------------------------
-AGENTS.md
-CLAUDE.md
-*.local.md
-sonar-local.sh
 *.zip
+

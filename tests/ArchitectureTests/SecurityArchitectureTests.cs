@@ -10,8 +10,8 @@ using Xunit;
 namespace Devsu.ArchitectureTests;
 
 /// <summary>
-/// Pruebas de Arquitectura de Seguridad (OWASP & 12-Factor App & SEGURIDAD_Y_PROTECCION_DATOS.md).
-/// Estas pruebas impiden mecánicamente la introducción de credenciales quemadas
+/// Pruebas de Arquitectura de Seguridad (OWASP & 12-Factor App).
+/// Estas pruebas impiden la introducción de credenciales quemadas
 /// y garantizan la sanitización estricta de DTOs en el pipeline de CI/CD.
 /// </summary>
 public class SecurityArchitectureTests

@@ -4,10 +4,8 @@
 **/obj
 **/.idea
 **/.vscode
-**/.agents
 **/tests
 **/TestResults
 **/*.md
 !README.md
-SECRETS_MAP.md
 BaseDatos.sql

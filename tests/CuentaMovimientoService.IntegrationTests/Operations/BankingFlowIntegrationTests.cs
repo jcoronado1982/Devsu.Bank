@@ -13,7 +13,7 @@ using Xunit;
 namespace CuentaMovimientoService.IntegrationTests.Operations;
 
 /// <summary>
-/// F6 (OBJETIVO.md) end-to-end real: ejercita el pipeline HTTP completo (TestServer,
+/// Flujo bancario end-to-end real: ejercita el pipeline HTTP completo (TestServer,
 /// controladores, GlobalExceptionMiddleware) contra Postgres y RabbitMQ reales via Testcontainers.
 /// </summary>
 public class BankingFlowIntegrationTests : IAsyncLifetime
@@ -66,10 +66,10 @@ public class BankingFlowIntegrationTests : IAsyncLifetime
         await _rabbitMq.DisposeAsync();
     }
 
-    // ─── F6: flujo real de OBJETIVO.md §2-4 contra HTTP real ──────────────────
+    // ─── Flujo bancario real contra HTTP ──────────────────────────────────────
 
     [Fact]
-    public async Task F6_FlujoCompletoJoseLema_CrearCuenta_RetiroValido_RetiroExcedeSaldo()
+    public async Task FlujoCompletoJoseLema_CrearCuenta_RetiroValido_RetiroExcedeSaldo()
     {
         // Arrange — Jose Lema (clienteId=1) ya existe via HasData seed en cliente_proyecciones
         var crearCuentaBody = new
@@ -85,7 +85,7 @@ public class BankingFlowIntegrationTests : IAsyncLifetime
         var respuestaCuenta = await _client.PostAsJsonAsync("/cuentas", crearCuentaBody);
         respuestaCuenta.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        // Act 2 — POST /movimientos: retiro válido de 575 (OBJETIVO.md §4)
+        // Act 2 — POST /movimientos: retiro válido de 575
         var respuestaRetiro = await _client.PostAsJsonAsync(
             "/movimientos", new { numeroCuenta = "E2E00478", valor = -575.00m });
 

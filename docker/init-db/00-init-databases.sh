@@ -1,8 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
-# Crea las dos bases de datos logicas exigidas por DICCIONARIO_DE_DATOS_Y_TIPOS.md
-# (una por microservicio, AGENTS.md prohibe compartir base de datos entre ellos)
+# Crea las dos bases de datos lógicas independientes
+# (una por microservicio siguiendo el patrón Database-per-Service)
 # y aplica el fragmento de esquema correspondiente a cada una.
 #
 # El motor Postgres solo ejecuta este directorio en el primer arranque de un

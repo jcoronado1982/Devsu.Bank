@@ -6,9 +6,8 @@ using Xunit;
 namespace ClienteService.UnitTests.Infrastructure;
 
 /// <summary>
-/// Verifica el adaptador BCrypt real (no el FakePasswordHasher usado en
-/// ClienteServiceTests) contra SEGURIDAD_Y_PROTECCION_DATOS.md Pilar 1:
-/// WorkFactor 12, hash unidireccional, y que la contraseña jamás sea recuperable.
+/// Verifica el adaptador BCrypt real: WorkFactor 12,
+/// hash unidireccional y que la contraseña jamás sea recuperable.
 /// </summary>
 public class BcryptPasswordHasherTests
 {

@@ -63,7 +63,7 @@ public class MovimientoServiceTests
         TipoCuenta tipo = TipoCuenta.Ahorros)
         => new Cuenta(numero, tipo, saldo, clienteId);
 
-    // ─── Casos de uso oficiales de OBJETIVO.md §4 ────────────────────────────
+    // ─── Casos de uso de movimientos bancarios ──────────────────────────────
 
     [Fact]
     public async Task RegistrarMovimiento_Retiro575_Cuenta478758_SaldoFinal1425()
