@@ -68,6 +68,27 @@ if ! $COMPOSE up --build -d; then
     exit 1
 fi
 
+# Verificacion automatica de compatibilidad de credenciales con volumenes previos
+DB_PASS="${POSTGRES_PASSWORD:-devsu_db_secret_pass}"
+if [ -f .env ]; then
+    ENV_PASS=$(grep -E '^POSTGRES_PASSWORD=' .env 2>/dev/null | head -n1 | cut -d '=' -f2- | tr -d '\r')
+    [ -n "$ENV_PASS" ] && DB_PASS="$ENV_PASS"
+fi
+
+for ((chk = 1; chk <= 15; chk++)); do
+    if docker exec devsu-postgres pg_isready -U "${POSTGRES_USER:-postgres}" >/dev/null 2>&1; then
+        if ! docker exec -e PGPASSWORD="$DB_PASS" devsu-postgres psql -U "${POSTGRES_USER:-postgres}" -d postgres -c "SELECT 1;" >/dev/null 2>&1; then
+            aviso "Detectado volumen previo de Docker con credenciales incompatibles."
+            echo "     Sincronizando y recreando volumenes automaticamente..."
+            $COMPOSE down -v >/dev/null 2>&1
+            $COMPOSE up --build -d >/dev/null 2>&1
+            ok "Volumenes recreados limpiamente con las credenciales actuales."
+        fi
+        break
+    fi
+    sleep 1
+done
+
 # ---------------------------------------------------------------------------
 # 3. Esperar a que las APIs respondan
 # ---------------------------------------------------------------------------
