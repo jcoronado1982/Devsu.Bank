@@ -72,7 +72,7 @@ public class MovimientoServiceTests
         var (svc, repo) = CrearServicio();
         repo.Store.Add(CuentaActiva("478758", 2000.00m, 1));
 
-        // Act — Retiro de 575 (Criterio 2 de AUDITORIA_02)
+        // Act — Retiro de 575
         var resultado = await svc.RegistrarMovimientoAsync(new RegistrarMovimientoDto("478758", -575.00m));
 
         // Assert
@@ -88,7 +88,7 @@ public class MovimientoServiceTests
         var (svc, repo) = CrearServicio();
         repo.Store.Add(CuentaActiva("225487", 100.00m, 2, TipoCuenta.Corriente));
 
-        // Act — Depósito de 600 (Criterio 2 de AUDITORIA_02)
+        // Act — Depósito de 600
         var resultado = await svc.RegistrarMovimientoAsync(new RegistrarMovimientoDto("225487", 600.00m));
 
         // Assert
@@ -103,7 +103,7 @@ public class MovimientoServiceTests
         var (svc, repo) = CrearServicio();
         repo.Store.Add(CuentaActiva("495878", 0.00m, 3));
 
-        // Act — Depósito de 150 sobre cuenta con saldo $0 (Criterio 2)
+        // Act — Depósito de 150 sobre cuenta con saldo $0
         var resultado = await svc.RegistrarMovimientoAsync(new RegistrarMovimientoDto("495878", 150.00m));
 
         // Assert
@@ -136,7 +136,7 @@ public class MovimientoServiceTests
         // Act
         Func<Task> act = () => svc.RegistrarMovimientoAsync(new RegistrarMovimientoDto("TEST01", -200.00m));
 
-        // Assert — mensaje exacto según AGENTS.md §3
+        // Assert — mensaje exacto según especificación de negocio
         await act.Should().ThrowAsync<SaldoNoDisponibleException>()
             .WithMessage("Saldo no disponible");
     }
@@ -154,7 +154,7 @@ public class MovimientoServiceTests
         // Act
         Func<Task> act = () => svc.RegistrarMovimientoAsync(new RegistrarMovimientoDto("INACT01", -100.00m));
 
-        // Assert — mensaje exacto según AGENTS.md §3
+        // Assert — mensaje exacto según especificación de negocio
         await act.Should().ThrowAsync<CuentaInactivaException>()
             .WithMessage("Cuenta inactiva");
     }
@@ -171,7 +171,7 @@ public class MovimientoServiceTests
         // Act
         Func<Task> act = () => svc.RegistrarMovimientoAsync(new RegistrarMovimientoDto("CUPO01", -200.00m));
 
-        // Assert — mensaje exacto según AGENTS.md §3
+        // Assert — mensaje exacto según especificación de negocio
         await act.Should().ThrowAsync<CupoDiarioExcedidoException>()
             .WithMessage("Cupo diario Excedido");
     }

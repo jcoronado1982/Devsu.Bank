@@ -3,6 +3,11 @@ using MassTransit;
 
 namespace ClienteService.Infrastructure.Messaging;
 
+/// <summary>
+/// Adaptador de IEventBus sobre MassTransit + RabbitMQ. IPublishEndpoint ya gestiona la
+/// serialización, el routing por tipo de mensaje y la propagación del traceparent W3C hacia
+/// el broker, por lo que este adaptador es un simple passthrough.
+/// </summary>
 public class MassTransitEventBus : IEventBus
 {
     private readonly IPublishEndpoint _publishEndpoint;

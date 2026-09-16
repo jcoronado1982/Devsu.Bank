@@ -27,6 +27,8 @@ public class Movimiento
             throw new ArgumentException("El valor del movimiento no puede ser cero.", nameof(valor));
 
         Fecha = fecha;
+        // El caller (MovimientoService) siempre pasa "Deposito"/"Retiro" explícito derivado del
+        // signo de valor; el fallback aquí solo cubre construcción directa de la entidad (tests, seeds).
         TipoMovimiento = tipoMovimiento?.Trim() ?? (valor > 0 ? "Depósito" : "Retiro");
         Valor = decimal.Round(valor, 2, MidpointRounding.AwayFromZero);
         Saldo = decimal.Round(saldoResultante, 2, MidpointRounding.AwayFromZero);

@@ -19,6 +19,9 @@ public class MovimientosController : ControllerBase
         _logger = logger;
     }
 
+    // 201 Created (no 200 OK): un movimiento es un recurso nuevo en el ledger append-only.
+    // Las reglas EB-01/EB-03/EB-04/EB-05 se validan dentro de MovimientoService, no aquí
+    // (controlador delgado) — sus excepciones las traduce GlobalExceptionMiddleware.
     [HttpPost]
     public async Task<ActionResult<MovimientoDto>> Registrar([FromBody] RegistrarMovimientoDto dto)
     {

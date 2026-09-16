@@ -1,6 +1,7 @@
 using System.Linq;
 using CuentaMovimientoService.Application.DTOs;
 using CuentaMovimientoService.Application.Exceptions;
+using CuentaMovimientoService.Application.Observability;
 using CuentaMovimientoService.Application.Ports;
 using CuentaMovimientoService.Application.Validators;
 using CuentaMovimientoService.Domain.Entities;
@@ -49,10 +50,36 @@ public class MovimientoService : IMovimientoService
         var cuenta = await _cuentaRepo.ObtenerPorNumeroCuentaAsync(dto.NumeroCuenta)
                      ?? throw new CuentaNotFoundException(dto.NumeroCuenta);
 
-        // EB-04/EB-01/EB-03: reglas de negocio del ledger, una clase Strategy por regla (Open/Closed)
-        foreach (var validador in _validators)
+        // EB-04/EB-01/EB-03: reglas de negocio del ledger, una clase Strategy por regla (Open/Closed).
+        // Span propio para que la traza distribuida (HTTP -> Application -> EF Core -> MassTransit)
+        // muestre el costo exacto de la validación financiera (OBSERVABILIDAD_Y_TELEMETRIA.md §2).
+        using (var actividad = LedgerTelemetry.ActivitySource.StartActivity("ValidarReglasNegocioEB01_EB03"))
         {
-            await validador.ValidarAsync(cuenta, dto.Valor, _movimientoRepo);
+            actividad?.SetTag("devsu.numero_cuenta", dto.NumeroCuenta);
+            actividad?.SetTag("devsu.valor", dto.Valor);
+
+            try
+            {
+                foreach (var validador in _validators)
+                {
+                    await validador.ValidarAsync(cuenta, dto.Valor, _movimientoRepo);
+                }
+            }
+            catch (SaldoNoDisponibleException)
+            {
+                LedgerTelemetry.MovimientosRechazadosPorSaldo.Add(1);
+                throw;
+            }
+            catch (CupoDiarioExcedidoException)
+            {
+                LedgerTelemetry.MovimientosRechazadosPorCupo.Add(1);
+                throw;
+            }
+            catch (CuentaInactivaException)
+            {
+                LedgerTelemetry.MovimientosRechazadosPorCuentaInactiva.Add(1);
+                throw;
+            }
         }
 
         var saldoActual = cuenta.ObtenerSaldoActual();
@@ -62,6 +89,8 @@ public class MovimientoService : IMovimientoService
         var movimiento = new Movimiento(DateTime.UtcNow, tipo, dto.Valor, saldoResultante, dto.NumeroCuenta);
         await _movimientoRepo.AddAsync(movimiento);
         await _unitOfWork.SaveChangesAsync();
+
+        LedgerTelemetry.MovimientosRegistrados.Add(1);
 
         _logger?.LogInformation("Movimiento {Tipo} registrado exitosamente en cuenta {NumeroCuenta} con valor {Valor}. Saldo nuevo: {Saldo}",
             tipo, dto.NumeroCuenta, dto.Valor, saldoResultante);

@@ -7,6 +7,9 @@ using Microsoft.Extensions.Logging;
 
 namespace CuentaMovimientoService.Application.Services;
 
+// Orquesta F1 (CRU de Cuenta) validando la existencia del cliente dueño (EB-07) y el
+// número de cuenta único (409 Conflict) antes de persistir. No valida reglas de movimientos
+// (EB-01/03/04/05) — esas viven en MovimientoService/IMovimientoValidator.
 public class CuentaService : ICuentaService
 {
     private readonly ICuentaRepository _repo;
@@ -41,9 +44,18 @@ public class CuentaService : ICuentaService
             throw new ArgumentOutOfRangeException(nameof(dto.SaldoInicial), "El saldo inicial no puede ser negativo.");
         }
 
-        var tipoCuenta = string.Equals(dto.TipoCuenta, "Corriente", StringComparison.OrdinalIgnoreCase)
-            ? TipoCuenta.Corriente
-            : TipoCuenta.Ahorros;
+        if (await _repo.ObtenerPorNumeroCuentaAsync(dto.NumeroCuenta) is not null)
+        {
+            _logger?.LogWarning("Número de cuenta duplicado rechazado: {NumeroCuenta}", dto.NumeroCuenta);
+            throw new NumeroCuentaDuplicadoException(dto.NumeroCuenta);
+        }
+
+        var tipoCuenta = dto.TipoCuenta?.Trim().ToLowerInvariant() switch
+        {
+            "ahorros" => TipoCuenta.Ahorros,
+            "corriente" => TipoCuenta.Corriente,
+            _ => throw new ArgumentException("El tipo de cuenta debe ser 'Ahorros' o 'Corriente'.", nameof(dto.TipoCuenta))
+        };
 
         var cuenta = new Cuenta(dto.NumeroCuenta, tipoCuenta, dto.SaldoInicial, dto.ClienteId, dto.Estado);
         await _repo.AddAsync(cuenta);
@@ -95,6 +107,7 @@ public class CuentaService : ICuentaService
         c.NumeroCuenta,
         c.TipoCuentaId == 2 ? "Corriente" : "Ahorros",
         c.SaldoInicial,
+        c.ObtenerSaldoActual(),
         c.Estado,
         c.ClienteId);
 }

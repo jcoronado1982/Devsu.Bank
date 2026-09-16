@@ -7,6 +7,7 @@ WORKDIR /app
 
 # Copiar código fuente completo para restaurar y compilar de forma consistente
 COPY src/CuentaMovimientoService/ src/CuentaMovimientoService/
+COPY src/Shared/ src/Shared/
 
 RUN dotnet publish src/CuentaMovimientoService/CuentaMovimientoService.Api/CuentaMovimientoService.Api.csproj \
     -c Release \

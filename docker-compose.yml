@@ -42,6 +42,19 @@ services:
     networks:
       - devsu-network
 
+  aspire-dashboard:
+    image: mcr.microsoft.com/dotnet/aspire-dashboard:8.2
+    container_name: devsu-aspire-dashboard
+    restart: unless-stopped
+    ports:
+      - "18888:18888" # Dashboard Web UI
+      - "4317:18889"  # OTLP gRPC endpoint (el contenedor escucha internamente en 18889)
+      - "4318:18890"  # OTLP HTTP endpoint (el contenedor escucha internamente en 18890)
+    environment:
+      DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS: "true"
+    networks:
+      - devsu-network
+
   cliente-service:
     build:
       context: .
@@ -56,6 +69,9 @@ services:
       RabbitMq__Port: "5672"
       RabbitMq__User: "${RABBITMQ_DEFAULT_USER:-devsu_admin}"
       RabbitMq__Password: "${RABBITMQ_DEFAULT_PASS:-devsu_rabbit_secret_pass}"
+      CuentaMovimientoService__BaseUrl: "http://cuenta-service:8080"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://aspire-dashboard:18889"
+      OTEL_SERVICE_NAME: "cliente-service"
     ports:
       - "8081:8080"
     depends_on:
@@ -63,6 +79,8 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      aspire-dashboard:
+        condition: service_started
     networks:
       - devsu-network
 
@@ -80,6 +98,8 @@ services:
       RabbitMq__Port: "5672"
       RabbitMq__User: "${RABBITMQ_DEFAULT_USER:-devsu_admin}"
       RabbitMq__Password: "${RABBITMQ_DEFAULT_PASS:-devsu_rabbit_secret_pass}"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://aspire-dashboard:18889"
+      OTEL_SERVICE_NAME: "cuenta-service"
     ports:
       - "8083:8080"
     depends_on:
@@ -87,10 +107,12 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      aspire-dashboard:
+        condition: service_started
     networks:
       - devsu-network
 
-  # Visor web opcional de base de datos
+  # Visor web de base de datos - devsu_clientes (Puerto 8089)
   pgweb:
     image: sosedoff/pgweb:latest
     container_name: devsu-pgweb
@@ -99,6 +121,21 @@ services:
       - "8089:8081"
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-devsu_db_secret_pass}@postgres:5432/${POSTGRES_DB_CLIENTES:-devsu_clientes}?sslmode=disable
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - devsu-network
+
+  # Visor web de base de datos - devsu_cuentas (Puerto 8090)
+  pgweb-cuentas:
+    image: sosedoff/pgweb:latest
+    container_name: devsu-pgweb-cuentas
+    restart: unless-stopped
+    ports:
+      - "8090:8081"
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-devsu_db_secret_pass}@postgres:5432/${POSTGRES_DB_CUENTAS:-devsu_cuentas}?sslmode=disable
     depends_on:
       postgres:
         condition: service_healthy

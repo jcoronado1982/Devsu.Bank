@@ -1,16 +1,21 @@
 using CuentaMovimientoService.Api.HealthChecks;
 using CuentaMovimientoService.Api.Middlewares;
 using CuentaMovimientoService.Application.Consumers;
+using CuentaMovimientoService.Application.Observability;
 using CuentaMovimientoService.Application.Ports;
 using CuentaMovimientoService.Application.Services;
 using CuentaMovimientoService.Application.Validators;
 using CuentaMovimientoService.Infrastructure.Adapters;
+using CuentaMovimientoService.Infrastructure.Messaging;
 using CuentaMovimientoService.Infrastructure.Persistence;
 using CuentaMovimientoService.Infrastructure.Repositories;
+using Devsu.Banking.ServiceDefaults;
+using Devsu.Contracts.Events;
 using MassTransit;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.OpenApi;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +23,16 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Logging.AddDebug();
+
+// Observabilidad Cloud-Native de punta a punta: traces (ASP.NET Core, HttpClient, Npgsql,
+// MassTransit), métricas y logs enriquecidos con TraceId, exportados vía OTLP al Aspire
+// Dashboard (OBSERVABILIDAD_Y_TELEMETRIA.md).
+builder.AddServiceDefaults();
+
+// Fuente de trazas/métricas propia del ledger financiero (span ValidarReglasNegocioEB01_EB03
+// y contadores movimientos_total / movimientos_fallidos_*), ver Application/Observability.
+builder.Services.ConfigureOpenTelemetryTracerProvider(t => t.AddSource(LedgerTelemetry.Name));
+builder.Services.ConfigureOpenTelemetryMeterProvider(m => m.AddMeter(LedgerTelemetry.Name));
 
 // Conexión a PostgreSQL (Inyección dinámica de secretos / Cero contraseñas en código)
 static string? NuloSiVacio(string? valor) => string.IsNullOrWhiteSpace(valor) ? null : valor;
@@ -48,6 +63,11 @@ builder.Services.AddScoped<ICuentaService, CuentaService>();
 builder.Services.AddScoped<IMovimientoService, MovimientoService>();
 builder.Services.AddScoped<IReporteService, ReporteService>();
 
+// Puerto de consumo de eventos de integración (agnóstico de MassTransit); los adaptadores
+// técnicos en Infrastructure.Messaging son el único punto que conoce MassTransit.IConsumer<T>.
+builder.Services.AddScoped<IIntegrationEventHandler<ClienteCreadoEvent>, ClienteCreadoConsumer>();
+builder.Services.AddScoped<IIntegrationEventHandler<ClienteEliminadoEvent>, ClienteEliminadoConsumer>();
+
 // MassTransit con RabbitMQ y Consumidor de Clientes
 var rabbitHost = builder.Configuration["RabbitMq:Host"] ?? builder.Configuration["RabbitMq__Host"] ?? "localhost";
 var rabbitUser = builder.Configuration["RabbitMq:User"] ?? builder.Configuration["RabbitMq__User"] ?? "devsu_admin";
@@ -58,8 +78,8 @@ ushort.TryParse(builder.Configuration["RabbitMq:Port"] ?? builder.Configuration[
 
 builder.Services.AddMassTransit(x =>
 {
-    x.AddConsumer<ClienteCreadoConsumer>();
-    x.AddConsumer<ClienteEliminadoConsumer>();
+    x.AddConsumer<ClienteCreadoMassTransitConsumer>();
+    x.AddConsumer<ClienteEliminadoMassTransitConsumer>();
 
     x.UsingRabbitMq((context, cfg) =>
     {
@@ -71,12 +91,12 @@ builder.Services.AddMassTransit(x =>
 
         cfg.ReceiveEndpoint("devsu-cliente-creado-cuentas", e =>
         {
-            e.ConfigureConsumer<ClienteCreadoConsumer>(context);
+            e.ConfigureConsumer<ClienteCreadoMassTransitConsumer>(context);
         });
 
         cfg.ReceiveEndpoint("devsu-cliente-eliminado-cuentas", e =>
         {
-            e.ConfigureConsumer<ClienteEliminadoConsumer>(context);
+            e.ConfigureConsumer<ClienteEliminadoMassTransitConsumer>(context);
         });
 
         cfg.ConfigureEndpoints(context);
@@ -92,10 +112,24 @@ builder.Services.AddControllers()
     });
 
 builder.Services.AddHealthChecks()
-    .AddCheck("self", () => HealthCheckResult.Healthy(), tags: ["live"])
     .AddCheck<PostgresHealthCheck>("postgres", tags: ["ready"]);
 
 builder.Services.AddEndpointsApiExplorer();
+
+// Documentación OpenAPI/Swagger publicada en /swagger (ver README). Se registra sin
+// restringirla a Development: los contenedores corren con ASPNETCORE_ENVIRONMENT=Production
+// y la UI es el punto de entrada documentado para validar los endpoints manualmente.
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Devsu Banking - CuentaMovimientoService API",
+        Version = "v1",
+        Description = "Microservicio de Cuentas, Movimientos y Reportes. Ledger append-only: el saldo se deriva "
+                    + "de saldoInicial mas la suma de movimientos. Reglas de negocio: 'Saldo no disponible' (EB-01), "
+                    + "'Cupo diario Excedido' (EB-03) y 'Cuenta inactiva' (EB-04) responden HTTP 400 con el mensaje exacto."
+    });
+});
 
 var app = builder.Build();
 
@@ -131,13 +165,19 @@ app.Use(async (context, next) =>
 // Middleware Global de Excepciones
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
-app.MapHealthChecks("/health");
-app.MapHealthChecks("/alive", new HealthCheckOptions
+app.UseSwagger();
+app.UseSwaggerUI(options =>
 {
-    Predicate = r => r.Tags.Contains("live")
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "CuentaMovimientoService API v1");
+    options.DocumentTitle = "Devsu Banking - CuentaMovimientoService";
 });
+
+app.MapDefaultEndpoints();
 app.MapControllers();
 
 app.Run();
 
+// Necesario para que CuentaMovimientoService.IntegrationTests use WebApplicationFactory<Program>
+// (top-level statements generan una clase Program implícita e internal; hacerla partial y pública
+// la expone al ensamblado de tests sin tocar tests/).
 public partial class Program { }

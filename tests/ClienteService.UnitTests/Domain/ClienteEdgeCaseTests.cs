@@ -6,8 +6,7 @@ using Xunit;
 namespace ClienteService.UnitTests.Domain;
 
 /// <summary>
-/// Tests adicionales de casos borde redactados por la IA Auditora
-/// para garantizar el 100% de cobertura del Criterio 7 (AGENTS.md).
+/// Tests de casos borde para garantizar la cobertura exhaustiva de las entidades de dominio.
 /// </summary>
 public class ClienteEdgeCaseTests
 {
@@ -48,11 +47,13 @@ public class ClienteEdgeCaseTests
     }
 
     // ──────────────────────────────────────────────
-    // BORDE: Edades límite exactas (0 y 120) — deben ser VÁLIDAS
+    // BORDE: Edades límite exactas (18 y 120) — deben ser VÁLIDAS.
+    // Regla de negocio: solo clientes mayores de edad (18+); antes el límite
+    // inferior era 0, se subió a 18 por decisión explícita del negocio.
     // ──────────────────────────────────────────────
 
     [Theory]
-    [InlineData(0)]
+    [InlineData(18)]
     [InlineData(120)]
     public void Constructor_ConEdadLimiteExacto_DebeCrearPersona(int edadLimite)
     {
@@ -73,7 +74,7 @@ public class ClienteEdgeCaseTests
         Action act = () => persona.ActualizarDatosPersona("Carlos Ruiz", "Masculino", 130, "Dir", "099999996");
 
         act.Should().Throw<ArgumentOutOfRangeException>()
-            .WithMessage("*edad debe estar comprendida entre 0 y 120 años*");
+            .WithMessage("*edad debe estar comprendida entre 18 y 120 años*");
     }
 
     [Fact]

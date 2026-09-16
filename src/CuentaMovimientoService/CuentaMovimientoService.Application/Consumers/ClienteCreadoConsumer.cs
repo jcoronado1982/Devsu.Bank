@@ -1,12 +1,14 @@
-using CuentaMovimientoService.Application.Events;
+using Devsu.Contracts.Events;
 using CuentaMovimientoService.Application.Ports;
 using CuentaMovimientoService.Domain.Entities;
-using MassTransit;
 using Microsoft.Extensions.Logging;
 
 namespace CuentaMovimientoService.Application.Consumers;
 
-public class ClienteCreadoConsumer : IConsumer<ClienteCreadoEvent>
+// Mantiene la proyección de solo lectura de clientes (ClienteProyeccion) sincronizada de forma
+// asíncrona, sin llamadas HTTP hacia ClienteService. Es la fuente de datos que usa ReporteService
+// para resolver nombre/identificación al filtrar /reportes por "cliente".
+public class ClienteCreadoConsumer : IIntegrationEventHandler<ClienteCreadoEvent>
 {
     private readonly IClienteInfoPort _clienteInfoPort;
     private readonly ILogger<ClienteCreadoConsumer> _logger;
@@ -17,14 +19,13 @@ public class ClienteCreadoConsumer : IConsumer<ClienteCreadoEvent>
         _logger = logger;
     }
 
-    public async Task Consume(ConsumeContext<ClienteCreadoEvent> context)
+    public async Task HandleAsync(ClienteCreadoEvent evento, CancellationToken ct = default)
     {
-        var msg = context.Message;
-        _logger.LogInformation("Consumiendo ClienteCreadoEvent para cliente ID {ClienteId}: {Nombre}", msg.ClienteId, msg.Nombre);
+        _logger.LogInformation("Consumiendo ClienteCreadoEvent para cliente ID {ClienteId}: {Nombre}", evento.ClienteId, evento.Nombre);
 
-        var proyeccion = new ClienteProyeccion(msg.ClienteId, msg.Nombre, msg.Identificacion, msg.Estado);
+        var proyeccion = new ClienteProyeccion(evento.ClienteId, evento.Nombre, evento.Identificacion, evento.Estado);
         await _clienteInfoPort.GuardarProyeccionAsync(proyeccion);
 
-        _logger.LogInformation("Proyección de cliente {ClienteId} guardada exitosamente", msg.ClienteId);
+        _logger.LogInformation("Proyección de cliente {ClienteId} guardada exitosamente", evento.ClienteId);
     }
 }

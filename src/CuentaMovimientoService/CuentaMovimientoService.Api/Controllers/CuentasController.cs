@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CuentaMovimientoService.Api.Controllers;
 
+// F1 de OBJETIVO.md: CRU sobre Cuenta (sin Delete: una cuenta se inactiva, no se borra).
+// PUT y PATCH comparten la misma implementación porque ActualizarCuentaDto solo expone
+// Estado — no hay diferencia semántica entre reemplazo total y parcial de un único campo.
 [ApiController]
 [Route("cuentas")]
 public class CuentasController : ControllerBase

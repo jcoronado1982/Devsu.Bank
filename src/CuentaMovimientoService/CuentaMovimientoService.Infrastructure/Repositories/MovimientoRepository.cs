@@ -21,6 +21,9 @@ public class MovimientoRepository : IMovimientoRepository
             .FirstOrDefaultAsync(m => m.MovimientoId == movimientoId);
     }
 
+    // OrderByDescending(Fecha) muestra el movimiento más reciente primero (como un estado de
+    // cuenta real). Usa el timestamp completo (no solo la fecha), por eso varios movimientos
+    // del mismo día quedan en su orden cronológico real y no en un orden arbitrario.
     public async Task<IEnumerable<Movimiento>> ObtenerPorNumeroCuentaYFechaAsync(
         string numeroCuenta, DateTime desde, DateTime hasta)
     {
@@ -29,7 +32,7 @@ public class MovimientoRepository : IMovimientoRepository
 
         return await _context.Movimientos
             .Where(m => m.NumeroCuenta == numeroCuenta && m.Fecha >= desdeUtc && m.Fecha <= hastaUtc)
-            .OrderBy(m => m.Fecha)
+            .OrderByDescending(m => m.Fecha)
             .ToListAsync();
     }
 

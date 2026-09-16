@@ -3,6 +3,9 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace CuentaMovimientoService.Api.HealthChecks;
 
+// Respalda el endpoint /health (OBSERVABILIDAD_Y_TELEMETRIA.md): a diferencia de /alive
+// (liveness, "¿el proceso responde?"), este check de readiness verifica la dependencia real
+// de PostgreSQL antes de que el orquestador enrute tráfico al pod/contenedor.
 public class PostgresHealthCheck : IHealthCheck
 {
     private readonly CuentaMovimientoDbContext _dbContext;

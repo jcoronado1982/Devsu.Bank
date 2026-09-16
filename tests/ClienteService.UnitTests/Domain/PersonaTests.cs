@@ -66,14 +66,16 @@ public class PersonaTests
     [Theory]
     [InlineData(-1)]
     [InlineData(-50)]
-    public void Constructor_ConEdadNegativa_DebeLanzarArgumentOutOfRangeException(int edadNegativa)
+    [InlineData(0)]
+    [InlineData(17)]
+    public void Constructor_ConEdadMenorA18_DebeLanzarArgumentOutOfRangeException(int edadInvalida)
     {
-        // Act
-        Action act = () => new Persona("Juan Osorio", "Masculino", edadNegativa, "1710000001", "Dir", "098874587");
+        // Act — regla de negocio: solo clientes mayores de edad (18+)
+        Action act = () => new Persona("Juan Osorio", "Masculino", edadInvalida, "1710000001", "Dir", "098874587");
 
         // Assert
         act.Should().Throw<ArgumentOutOfRangeException>()
-            .WithMessage("*edad debe estar comprendida entre 0 y 120 años*");
+            .WithMessage("*edad debe estar comprendida entre 18 y 120 años*");
     }
 
     [Theory]
@@ -87,11 +89,10 @@ public class PersonaTests
 
         // Assert
         act.Should().Throw<ArgumentOutOfRangeException>()
-            .WithMessage("*edad debe estar comprendida entre 0 y 120 años*");
+            .WithMessage("*edad debe estar comprendida entre 18 y 120 años*");
     }
 
     [Theory]
-    [InlineData(0)]
     [InlineData(18)]
     [InlineData(65)]
     [InlineData(120)]

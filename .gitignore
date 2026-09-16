@@ -83,5 +83,7 @@ skills/
 .skills/
 .github/copilot-instructions.md
 sonar-local.sh
+DOCUMENTACION_TECNICA_CAMBIOS.md
+MAPA_DE_VALIDACIONES_Y_ERRORES.md
 
 

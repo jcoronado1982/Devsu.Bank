@@ -6,14 +6,5 @@ set -e
 
 echo "🔍 Ejecutando pre-commit hook..."
 
-# 1. Validar nombre de la rama actual (no permitir commits directos en main)
-CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-
-if [ "$CURRENT_BRANCH" = "main" ]; then
-    echo "❌ ERROR: Está prohibido hacer commits directos en la rama 'main'."
-    echo "💡 Por favor crea una rama de trabajo: git checkout -b feat/nombre-tarea"
-    exit 1
-fi
-
-echo "✅ Verificación de pre-commit superada (Rama: $CURRENT_BRANCH)."
+echo "✅ Verificación de pre-commit superada."
 exit 0

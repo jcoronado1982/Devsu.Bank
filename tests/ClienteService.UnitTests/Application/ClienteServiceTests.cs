@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ClienteService.Application.DTOs;
-using ClienteService.Application.Events;
+using Devsu.Contracts.Events;
 using ClienteService.Application.Exceptions;
 using ClienteService.Application.Ports;
 using ClienteService.Application.Services;

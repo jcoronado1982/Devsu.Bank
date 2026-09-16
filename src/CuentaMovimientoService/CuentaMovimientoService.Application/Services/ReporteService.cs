@@ -7,6 +7,12 @@ namespace CuentaMovimientoService.Application.Services;
 
 public class ReporteService : IReporteService
 {
+    // Colombia y Ecuador comparten UTC-5 fijo, sin horario de verano.
+    // Offset fijo en vez de TimeZoneInfo.FindSystemTimeZoneById: las imágenes Alpine
+    // de los Dockerfiles de este proyecto no incluyen tzdata y lanzarían TimeZoneNotFoundException.
+    private static readonly TimeZoneInfo ZonaHorariaReporte =
+        TimeZoneInfo.CreateCustomTimeZone("Colombia", TimeSpan.FromHours(-5), "Hora Colombia", "Hora Colombia");
+
     private readonly ICuentaRepository _cuentaRepo;
     private readonly IMovimientoRepository _movimientoRepo;
     private readonly IClienteInfoPort _clienteInfoPort;
@@ -42,12 +48,16 @@ public class ReporteService : IReporteService
             foreach (var mov in movimientos)
             {
                 resultado.Add(new ReporteMovimientoDto(
-                    Fecha: mov.Fecha.ToString("d/M/yyyy"),
+                    ClienteId: clienteId,
+                    Fecha: TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(mov.Fecha, DateTimeKind.Utc), ZonaHorariaReporte)
+                        .ToString("d/M/yyyy HH:mm:ss"),
                     Cliente: nombreCliente,
                     NumeroCuenta: cuenta.NumeroCuenta,
                     Tipo: cuenta.TipoCuentaId == 2 ? "Corriente" : "Ahorros",
                     SaldoInicial: cuenta.SaldoInicial,
+                    SaldoActual: cuenta.ObtenerSaldoActual(),
                     Estado: cuenta.Estado,
+                    TipoMovimiento: mov.TipoMovimiento,
                     Movimiento: mov.Valor,
                     SaldoDisponible: mov.Saldo));
             }
@@ -62,21 +72,58 @@ public class ReporteService : IReporteService
 
     public async Task<IEnumerable<ReporteMovimientoDto>> GenerarReporteEstadoCuentaAsync(string cliente, string? fecha)
     {
-        long clienteId;
-        if (!long.TryParse(cliente, out clienteId))
+        var clienteIds = await ResolverClienteIdsAsync(cliente);
+        if (clienteIds.Count == 0)
         {
-            var encontradoId = await _clienteInfoPort.ObtenerClienteIdPorNombreAsync(cliente);
-            if (!encontradoId.HasValue)
-            {
-                // EB-09: Si no se encuentra el cliente, retorna array vacío []
-                _logger?.LogInformation("Cliente '{Cliente}' no encontrado para reporte, retornando []", cliente);
-                return Enumerable.Empty<ReporteMovimientoDto>();
-            }
-            clienteId = encontradoId.Value;
+            // EB-09: Si no se encuentra el cliente, retorna array vacío []
+            _logger?.LogInformation("Cliente '{Cliente}' no encontrado para reporte, retornando []", cliente);
+            return Enumerable.Empty<ReporteMovimientoDto>();
         }
 
         var (desde, hasta) = ParsearRangoFechas(fecha);
-        return await GenerarReporteEstadoCuentaAsync(clienteId, desde, hasta);
+        var resultado = new List<ReporteMovimientoDto>();
+        foreach (var clienteId in clienteIds)
+        {
+            resultado.AddRange(await GenerarReporteEstadoCuentaAsync(clienteId, desde, hasta));
+        }
+
+        return resultado;
+    }
+
+    // Longitud mínima para la búsqueda parcial por nombre. El endpoint /reportes es anónimo
+    // (no hay autenticación en el alcance de este proyecto), así que sin este mínimo cualquiera
+    // podría pedir cliente=a y recibir el estado de cuenta de decenas de clientes reales de un
+    // solo golpe. No resuelve la falta de autenticación, pero acota el radio de exposición de
+    // una búsqueda de texto libre sin exigir login (control de seguridad y buenas prácticas).
+    private const int LongitudMinimaBusquedaParcial = 3;
+
+    // Resuelve el filtro "cliente" en cascada: id interno (soporte técnico) -> identificación
+    // (documento, la vía real de un cliente bancario) -> nombre parcial (puede matchear varios).
+    private async Task<IReadOnlyList<long>> ResolverClienteIdsAsync(string cliente)
+    {
+        var texto = cliente.Trim();
+
+        if (long.TryParse(texto, out var clienteId))
+        {
+            var existe = await _clienteInfoPort.ObtenerNombreClienteAsync(clienteId);
+            if (existe is not null)
+            {
+                return new List<long> { clienteId };
+            }
+        }
+
+        var idPorIdentificacion = await _clienteInfoPort.ObtenerClienteIdPorIdentificacionAsync(texto);
+        if (idPorIdentificacion.HasValue)
+        {
+            return new List<long> { idPorIdentificacion.Value };
+        }
+
+        if (texto.Length < LongitudMinimaBusquedaParcial)
+        {
+            return Array.Empty<long>();
+        }
+
+        return await _clienteInfoPort.ObtenerClienteIdsPorNombreParcialAsync(texto);
     }
 
     private static (DateTime desde, DateTime hasta) ParsearRangoFechas(string? fecha)

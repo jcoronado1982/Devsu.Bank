@@ -7,6 +7,7 @@ WORKDIR /app
 
 # Copiar código fuente completo para restaurar y compilar de forma consistente
 COPY src/ClienteService/ src/ClienteService/
+COPY src/Shared/ src/Shared/
 
 RUN dotnet publish src/ClienteService/ClienteService.Api/ClienteService.Api.csproj \
     -c Release \

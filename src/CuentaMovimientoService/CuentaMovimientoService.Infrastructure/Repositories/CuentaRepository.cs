@@ -5,6 +5,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CuentaMovimientoService.Infrastructure.Repositories;
 
+// Las tres lecturas incluyen Movimientos y TipoCuentaItem siempre (nunca hay una versión
+// "liviana"): Cuenta.ObtenerSaldoActual() necesita los movimientos cargados en memoria,
+// y ReporteService/CuentaService.ToDto dependen de esas mismas consultas.
 public class CuentaRepository : ICuentaRepository
 {
     private readonly CuentaMovimientoDbContext _context;

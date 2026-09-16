@@ -7,8 +7,7 @@ using Xunit;
 namespace CuentaMovimientoService.UnitTests.Domain;
 
 /// <summary>
-/// Tests adicionales de casos borde redactados por la IA Auditora
-/// para garantizar el 100% de cobertura del Criterio 7 (AGENTS.md).
+/// Tests de casos borde para garantizar la cobertura exhaustiva de movimientos y cuentas.
 /// </summary>
 public class CuentaMovimientoEdgeCaseTests
 {

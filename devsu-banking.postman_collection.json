@@ -88,6 +88,383 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Crear Cliente - Genero Invalido (400)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code es 400 Bad Request\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"pm.test(\"Mensaje indica genero invalido\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.mensaje).to.include(\"g\\u00e9nero\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{servidor}}:{{puerto_cliente}}/clientes",
+							"host": [
+								"{{servidor}}"
+							],
+							"port": "{{puerto_cliente}}",
+							"path": [
+								"clientes"
+							]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Test Genero\",\n  \"genero\": \"Otro\",\n  \"edad\": 30,\n  \"identificacion\": \"5550001111\",\n  \"direccion\": \"Calle Test 1\",\n  \"telefono\": \"0999999991\",\n  \"contrasena\": \"1234\",\n  \"estado\": true\n}"
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear Cliente - Edad Menor a 18 (400)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code es 400 Bad Request\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"pm.test(\"Mensaje indica edad invalida\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.mensaje).to.include(\"edad\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{servidor}}:{{puerto_cliente}}/clientes",
+							"host": [
+								"{{servidor}}"
+							],
+							"port": "{{puerto_cliente}}",
+							"path": [
+								"clientes"
+							]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Test Edad\",\n  \"genero\": \"Masculino\",\n  \"edad\": 17,\n  \"identificacion\": \"5550001112\",\n  \"direccion\": \"Calle Test 2\",\n  \"telefono\": \"0999999992\",\n  \"contrasena\": \"1234\",\n  \"estado\": true\n}"
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear Cliente - Telefono Con Letras (400)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code es 400 Bad Request\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"pm.test(\"Mensaje indica telefono invalido\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.mensaje).to.include(\"tel\\u00e9fono\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{servidor}}:{{puerto_cliente}}/clientes",
+							"host": [
+								"{{servidor}}"
+							],
+							"port": "{{puerto_cliente}}",
+							"path": [
+								"clientes"
+							]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Test Telefono\",\n  \"genero\": \"Masculino\",\n  \"edad\": 30,\n  \"identificacion\": \"5550001113\",\n  \"direccion\": \"Calle Test 3\",\n  \"telefono\": \"abc123def\",\n  \"contrasena\": \"1234\",\n  \"estado\": true\n}"
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear Cliente - Direccion Vacia (400)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code es 400 Bad Request\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"pm.test(\"Mensaje indica direccion obligatoria\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.mensaje).to.include(\"direcci\\u00f3n\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{servidor}}:{{puerto_cliente}}/clientes",
+							"host": [
+								"{{servidor}}"
+							],
+							"port": "{{puerto_cliente}}",
+							"path": [
+								"clientes"
+							]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Test Direccion\",\n  \"genero\": \"Femenino\",\n  \"edad\": 30,\n  \"identificacion\": \"5550001114\",\n  \"direccion\": \"\",\n  \"telefono\": \"0999999994\",\n  \"contrasena\": \"1234\",\n  \"estado\": true\n}"
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear Cliente - Identificacion Muy Corta (400)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code es 400 Bad Request\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"pm.test(\"Mensaje indica identificacion invalida\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.mensaje).to.include(\"identificaci\\u00f3n\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{servidor}}:{{puerto_cliente}}/clientes",
+							"host": [
+								"{{servidor}}"
+							],
+							"port": "{{puerto_cliente}}",
+							"path": [
+								"clientes"
+							]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Test Identificacion\",\n  \"genero\": \"Masculino\",\n  \"edad\": 30,\n  \"identificacion\": \"123\",\n  \"direccion\": \"Calle Test 5\",\n  \"telefono\": \"0999999995\",\n  \"contrasena\": \"1234\",\n  \"estado\": true\n}"
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "EB-06 Crear Cliente - Identificacion Duplicada (409)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code es 409 Conflict\", function () {",
+									"    pm.response.to.have.status(409);",
+									"});",
+									"pm.test(\"Mensaje indica identificacion duplicada\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.mensaje).to.include(\"Ya existe\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{servidor}}:{{puerto_cliente}}/clientes",
+							"host": [
+								"{{servidor}}"
+							],
+							"port": "{{puerto_cliente}}",
+							"path": [
+								"clientes"
+							]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Jose Lema Duplicado\",\n  \"genero\": \"Masculino\",\n  \"edad\": 35,\n  \"identificacion\": \"1234567890\",\n  \"direccion\": \"Otra Direccion\",\n  \"telefono\": \"098254785\",\n  \"contrasena\": \"1234\",\n  \"estado\": true\n}"
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear Cliente Temporal (Para Eliminar)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code es 201 Created\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"pm.test(\"Guarda clienteId para el test de eliminacion\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.clienteId).to.be.a(\"number\");",
+									"    pm.collectionVariables.set(\"clienteIdEliminar\", jsonData.clienteId);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{servidor}}:{{puerto_cliente}}/clientes",
+							"host": [
+								"{{servidor}}"
+							],
+							"port": "{{puerto_cliente}}",
+							"path": [
+								"clientes"
+							]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Cliente Temporal\",\n  \"genero\": \"Femenino\",\n  \"edad\": 40,\n  \"identificacion\": \"5550009999\",\n  \"direccion\": \"Calle Temporal 123\",\n  \"telefono\": \"0999999999\",\n  \"contrasena\": \"1234\",\n  \"estado\": true\n}"
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar Cliente (204)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code es 204 No Content\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{servidor}}:{{puerto_cliente}}/clientes/{{clienteIdEliminar}}",
+							"host": [
+								"{{servidor}}"
+							],
+							"port": "{{puerto_cliente}}",
+							"path": [
+								"clientes",
+								"{{clienteIdEliminar}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verificar Cliente Eliminado (404)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code es 404 Not Found\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"pm.test(\"Mensaje exacto 'Cliente no encontrado'\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.mensaje || jsonData.detail || pm.response.text()).to.include(\"Cliente no encontrado\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{servidor}}:{{puerto_cliente}}/clientes/{{clienteIdEliminar}}",
+							"host": [
+								"{{servidor}}"
+							],
+							"port": "{{puerto_cliente}}",
+							"path": [
+								"clientes",
+								"{{clienteIdEliminar}}"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -170,6 +547,94 @@
 								"cuentas",
 								"478758"
 							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear Cuenta - TipoCuenta Invalido (400)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code es 400 Bad Request\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"pm.test(\"Mensaje indica tipo de cuenta invalido\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.mensaje).to.include(\"tipo de cuenta\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{servidor}}:{{puerto_cuenta}}/cuentas",
+							"host": [
+								"{{servidor}}"
+							],
+							"port": "{{puerto_cuenta}}",
+							"path": [
+								"cuentas"
+							]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"numeroCuenta\": \"9998887771\",\n  \"tipoCuenta\": \"Platino\",\n  \"saldoInicial\": 100.0,\n  \"estado\": true,\n  \"clienteId\": 1\n}"
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear Cuenta - NumeroCuenta Muy Corto (400)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code es 400 Bad Request\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"pm.test(\"Mensaje indica numero de cuenta invalido\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.mensaje).to.include(\"n\\u00famero de cuenta\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{servidor}}:{{puerto_cuenta}}/cuentas",
+							"host": [
+								"{{servidor}}"
+							],
+							"port": "{{puerto_cuenta}}",
+							"path": [
+								"cuentas"
+							]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"numeroCuenta\": \"123\",\n  \"tipoCuenta\": \"Ahorros\",\n  \"saldoInicial\": 100.0,\n  \"estado\": true,\n  \"clienteId\": 1\n}"
 						}
 					},
 					"response": []
@@ -332,6 +797,10 @@
 		{
 			"key": "puerto_cuenta",
 			"value": "8083"
+		},
+		{
+			"key": "clienteIdEliminar",
+			"value": ""
 		}
 	]
 }

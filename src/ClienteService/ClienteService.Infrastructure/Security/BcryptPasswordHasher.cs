@@ -2,6 +2,12 @@ using ClienteService.Application.Ports;
 
 namespace ClienteService.Infrastructure.Security;
 
+/// <summary>
+/// Implementación de IPasswordHasher con BCrypt. WorkFactor 12 es el estándar bancario de seguridad:
+/// suficientemente costoso para dificultar ataques de fuerza bruta/rainbow table,
+/// sin degradar de forma inaceptable la latencia de creación/login de clientes.
+/// Se registra como Singleton en Program.cs porque el algoritmo es puro y sin estado mutable.
+/// </summary>
 public class BcryptPasswordHasher : IPasswordHasher
 {
     private const int WorkFactor = 12;

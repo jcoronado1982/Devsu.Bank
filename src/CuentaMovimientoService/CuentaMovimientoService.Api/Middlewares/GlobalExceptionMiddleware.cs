@@ -5,6 +5,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CuentaMovimientoService.Api.Middlewares;
 
+// Único punto de traducción excepción-de-negocio -> HTTP en toda la Api: los controladores
+// nunca hacen try/catch de estas excepciones, así se garantiza que el mensaje y código de
+// cada caso EB-0x sea siempre el mismo sin importar qué endpoint lo dispare.
 public class GlobalExceptionMiddleware
 {
     private readonly RequestDelegate _next;
@@ -63,6 +66,12 @@ public class GlobalExceptionMiddleware
                 statusCode = HttpStatusCode.NotFound;
                 mensaje = "Cuenta no encontrada";
                 _logger.LogWarning("Cuenta no encontrada: {Mensaje}", ctaEx.Message);
+                break;
+
+            case NumeroCuentaDuplicadoException numCtaEx:
+                statusCode = HttpStatusCode.Conflict;
+                mensaje = numCtaEx.Message;
+                _logger.LogWarning("Conflicto de número de cuenta duplicado: {Mensaje}", numCtaEx.Message);
                 break;
 
             case ArgumentOutOfRangeException outEx:

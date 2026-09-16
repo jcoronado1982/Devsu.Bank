@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ClienteService.Application\ClienteService.Application.csproj" />
     <ProjectReference Include="..\ClienteService.Infrastructure\ClienteService.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Shared\Devsu.Banking.ServiceDefaults\Devsu.Banking.ServiceDefaults.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -10,6 +11,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.3" />
   </ItemGroup>
 
   <PropertyGroup>

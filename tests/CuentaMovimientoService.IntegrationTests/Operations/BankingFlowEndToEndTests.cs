@@ -105,7 +105,7 @@ public class BankingFlowEndToEndTests : IAsyncLifetime
         var respuestaSobregiro = await _client.PostAsJsonAsync(
             "/movimientos", new { numeroCuenta = "E2E00478", valor = -5000.00m });
 
-        // Assert — EB-01 a través del pipeline HTTP real: 400 + mensaje EXACTO (AGENTS.md §3)
+        // Assert — EB-01 a través del pipeline HTTP real: 400 + mensaje exacto
         respuestaSobregiro.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         var errorJson = await respuestaSobregiro.Content.ReadFromJsonAsync<JsonElement>();
         errorJson.GetProperty("mensaje").GetString().Should().Be("Saldo no disponible");
@@ -127,7 +127,7 @@ public class BankingFlowEndToEndTests : IAsyncLifetime
         // Act
         var respuesta = await _client.PostAsJsonAsync("/cuentas", body);
 
-        // Assert — AGENTS.md §3: ClienteNoEncontradoException -> HTTP 404 "Cliente no encontrado"
+        // Assert — ClienteNoEncontradoException -> HTTP 404 "Cliente no encontrado"
         respuesta.StatusCode.Should().Be(HttpStatusCode.NotFound);
         var json = await respuesta.Content.ReadFromJsonAsync<JsonElement>();
         json.GetProperty("mensaje").GetString().Should().Be("Cliente no encontrado");
