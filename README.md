@@ -157,3 +157,9 @@ dotnet test
 - `BaseDatos.sql`: Script DDL físico de PostgreSQL.
 - `devsu-banking.postman_collection.json`: Colección de pruebas de Postman.
 - `docker-compose.yml`: Orquestador de contenedores.
+
+---
+
+## 👤 Autor
+
+- **Jesús Alberto Coronado** - *Ingeniero de Software Senior .NET*
