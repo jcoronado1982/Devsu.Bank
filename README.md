@@ -1,109 +1,141 @@
 # 🏛️ Devsu Banking Microservices (.NET 9)
 
-Solución de microservicios bancarios cloud-native desarrollada con **C# 13 / .NET 9**, implementando **Clean Architecture**, **Entity Framework Core 9** sobre **PostgreSQL 16**, mensajería reactiva asíncrona con **RabbitMQ + MassTransit** y orquestación con **Docker Compose**.
+Solución de microservicios bancarios desarrollada para la prueba técnica de Devsu, basada en **.NET 9 (C# 13)**, **Clean Architecture**, **PostgreSQL 16** y mensajería asíncrona con **RabbitMQ** (MassTransit).
 
 ---
 
-## ⚡ Inicio Rápido Local (Quickstart - 1 solo comando)
+## 🚀 Cómo probar la solución
 
-El proyecto está diseñado para ejecutarse localmente de forma automatizada mediante contenedores.
+Se ofrecen dos alternativas para evaluar el proyecto: directamente en la nube (sin instalaciones) o en local mediante Docker.
 
-### Prerrequisitos
-- [Docker Engine & Docker Compose](https://docs.docker.com/get-docker/) (v24+ / Compose v2+)
-- [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0) (opcional para ejecución y compilación local fuera de Docker)
+### Opción 1: Probar en línea (Directo en Internet - Sin instalar nada)
 
-### Despliegue de los Servicios
-Ejecute en la raíz del repositorio:
+Los microservicios se encuentran desplegados y listos para probar:
 
-```bash
-docker compose up --build -d
-```
+- **Swagger Clientes:** [https://clientes.launch.lat/swagger](https://clientes.launch.lat/swagger)
+- **Swagger Cuentas y Movimientos:** [https://cuentas.launch.lat/swagger](https://cuentas.launch.lat/swagger)
 
-Este comando compila y levanta la topología completa en contenedores basados en **Alpine Linux**:
-1. **`postgres`** (`devsu-postgres` en puerto `5432`): Base de datos relacional PostgreSQL 16 con esquemas independientes (`devsu_clientes` y `devsu_cuentas`).
-2. **`rabbitmq`** (`devsu-rabbitmq` en puertos `5672` y `15672`): Broker de mensajería con panel de administración web.
-3. **`cliente-service`** (`devsu-cliente-service` en puerto `8081`): Microservicio de gestión de Clientes y Personas.
-4. **`cuenta-service`** (`devsu-cuenta-service` en puerto `8083`): Microservicio de gestión de Cuentas, Movimientos financieros y Reportes.
-5. **`pgweb`** (`devsu-pgweb` en puerto `8089`): Visor web visual para consultar la base de datos PostgreSQL.
+Para validar con **Postman**, solo se debe importar la colección [`devsu-banking.postman_collection.json`](devsu-banking.postman_collection.json) y apuntar las peticiones a estos dominios públicos.
 
-### Verificación del Estado
-Verifique que los contenedores se encuentren en estado `healthy` / `Up`:
-```bash
-docker compose ps
-```
+### Opción 2: Probar en Local con Docker (1 solo comando)
 
-Acceso a los endpoints:
-- **ClienteService API:** `http://localhost:8081/swagger`
-- **CuentaMovimientoService API:** `http://localhost:8083/swagger`
-- **RabbitMQ Management Dashboard:** `http://localhost:15672`
-- **Visor PGWeb:** `http://localhost:8089`
+**Único requisito:** Tener [Docker Desktop](https://docs.docker.com/get-docker/) o Docker Engine activo. No requiere .NET, PostgreSQL ni RabbitMQ instalados en la máquina.
 
-Para detener el ambiente:
-```bash
-docker compose down
-```
+1. **Levantar los servicios:**
+   - En cualquier sistema operativo (Linux, Mac o Windows), ejecutar en la raíz:
+     ```bash
+     docker compose up --build -d
+     ```
+   - O usando los scripts automáticos incluidos:
+     - **Windows:** Doble clic en `levantar.bat` (o ejecutar `levantar.ps1`).
+     - **Linux / macOS:** Ejecutar `./levantar.sh`.
 
----
+2. **Acceso local:**
+   - **Swagger Clientes:** [http://localhost:8081/swagger](http://localhost:8081/swagger)
+   - **Swagger Cuentas y Movimientos:** [http://localhost:8083/swagger](http://localhost:8083/swagger)
+   - **RabbitMQ Dashboard:** [http://localhost:15672](http://localhost:15672) *(guest / guest)*
+   - **Visor visual de BD (PGWeb):** [http://localhost:8089](http://localhost:8089)
 
-## 🧪 Pruebas Automatizadas
-
-El proyecto cuenta con suites completas de pruebas unitarias, de arquitectura y de integración con base de datos real:
-
-```bash
-# Compilación limpia de la solución
-dotnet build --no-incremental
-
-# Ejecución de todas las pruebas automatizadas (76 tests)
-dotnet test
-```
-
-| Suite | Pruebas |
-| :--- | ---: |
-| `tests/ClienteService.UnitTests` | 13 |
-| `tests/CuentaMovimientoService.UnitTests` | 35 |
-| `tests/ArchitectureTests` | 10 |
-| `tests/CuentaMovimientoService.IntegrationTests` | 18 |
-| **Total** | **76** |
-
-### Detalle de Suites
-- **Pruebas de Arquitectura y Seguridad (`tests/ArchitectureTests`):** Valida con `NetArchTest.Rules` que las capas de Dominio y Aplicación no se acoplen a infraestructura ni frameworks, y verifica la sanitización estricta de DTOs.
-- **Pruebas Unitarias de Clientes (`tests/ClienteService.UnitTests`):** Pruebas unitarias de las entidades `Persona` y `Cliente`, validaciones de negocio y hasheo seguro de contraseñas con BCrypt.
-- **Pruebas Unitarias de Cuentas y Movimientos (`tests/CuentaMovimientoService.UnitTests`):** Pruebas unitarias del ledger financiero, saldo disponible acumulado, control de saldo insuficiente y validación de límite de cupo diario.
-- **Pruebas de Integración con Testcontainers (`tests/CuentaMovimientoService.IntegrationTests`):** Levanta PostgreSQL 16 efímero para validar integridad física del esquema, disparadores de base de datos, concurrencia simultánea y sincronización asíncrona de eventos.
+3. **Detener el ambiente:**
+   ```bash
+   docker compose down
+   ```
+   *(o con `detener.bat` en Windows / `./detener.sh` en Linux).*
 
 ---
 
-## 📬 Colección de Postman / Newman CLI
+## 🏛️ Arquitectura del Sistema
 
-Se incluye la colección oficial en formato JSON: [`devsu-banking.postman_collection.json`](devsu-banking.postman_collection.json).
+La solución implementa una arquitectura desacoplada de 2 microservicios con patrón **Database-per-Service** y comunicación asíncrona por eventos sobre RabbitMQ:
 
-Para ejecutar las pruebas de integración de endpoints por consola mediante Newman:
+![Arquitectura de Microservicios](docs/Arquitectura.png)
+
+1. **`ClienteService` (Puerto 8081 / `https://clientes.launch.lat`):**
+   - Gestión de `Persona` y `Cliente` (herencia Table-per-Type).
+   - Hasheo de contraseñas con BCrypt.
+   - Publica eventos asíncronos (`ClienteCreadoEvent`, `ClienteActualizadoEvent`, `ClienteEliminadoEvent`).
+
+2. **`CuentaMovimientoService` (Puerto 8083 / `https://cuentas.launch.lat`):**
+   - Gestión de `Cuenta` y registro transaccional de `Movimientos`.
+   - Control de saldo insuficiente (HTTP 400 con mensaje `"Saldo no disponible"`).
+   - Control de cupo diario acumulado de retiros ($1,000.00).
+   - Reporte consolidado de estado de cuenta (`/reportes?fecha=...&cliente=...`).
+   - Sincroniza datos de clientes consumiendo los eventos de RabbitMQ.
+
+---
+
+## 🧩 Clean Architecture (Estructura Interna)
+
+Cada microservicio implementa **Clean Architecture** estructurado en cuatro capas concéntricas con inversión de dependencias:
+
+![Clean Architecture](docs/Diagrama%20Clean%20Architecture.png)
+
+- **Domain:** Entidades puras POCO (`Cliente`, `Persona`, `Cuenta`, `Movimiento`), reglas de negocio y puertos (interfaces). Cero dependencias externas.
+- **Application:** Casos de uso, orquestación, DTOs y validadores de negocio.
+- **Infrastructure:** Adaptadores técnicos (EF Core 9, repositorios PostgreSQL y bus de RabbitMQ).
+- **Api:** Controladores REST delgados, serialización JSON y middleware global de excepciones.
+
+---
+
+## 🗄️ Modelo de Base de Datos Relacional
+
+PostgreSQL 16 con dos bases de datos independientes (`devsu_clientes` y `devsu_cuentas`), restricciones de integridad física (`CHECK`) y claves foráneas:
+
+![Modelo de Base de Datos](docs/Diagrama%20BD.png)
+
+El script DDL consolidado para recrear toda la estructura se encuentra en [`BaseDatos.sql`](BaseDatos.sql).
+
+---
+
+## ⚡ Flujo Transaccional de Movimientos
+
+Ciclo de vida de una transacción financiera (`POST /movimientos`), validando saldo disponible, cupo diario acumulado y concurrencia optimista:
+
+![Diagrama de Secuencia Transaccional](docs/Diagrama%20Secuencia%20Transaccional.png)
+
+---
+
+## 🔄 Sincronización Asíncrona y Reportes (CQRS)
+
+Sincronización eventual entre servicios mediante eventos de RabbitMQ para alimentar proyecciones locales de lectura rápida en el reporte de estado de cuenta:
+
+![Reporte CQRS](docs/Diagrama%20Reporte%20CQRS.png)
+
+---
+
+## 📬 Validación de Endpoints con Postman
+
+Se incluye la colección oficial con los casos de uso automatizados: [`devsu-banking.postman_collection.json`](devsu-banking.postman_collection.json).
+
+![Validación en Postman](docs/Postman.png)
+
+### Ejecución por consola (Newman CLI):
 ```bash
 ./test-postman-cli.sh
 ```
+*También se puede importar directamente en la aplicación Postman para probar tanto en local como contra los endpoints públicos.*
 
 ---
 
-## 🗄️ Base de Datos y Diagramas de Arquitectura
+## 🧪 Pruebas Automatizadas (.NET)
 
-El script DDL con la creación de tablas, índices y restricciones relacionales se encuentra disponible en [`BaseDatos.sql`](BaseDatos.sql).
+Con el SDK de .NET 9 instalado, se ejecutan todas las pruebas con:
+```bash
+dotnet test
+```
 
-Documentación técnica y diagramas de diseño:
-- [📊 **Diagrama Entidad - Relación y Modelo Físico:**](docs/diagrama-entidad-relacion.md) Esquema Database-per-Service en PostgreSQL 16 y desacoplamiento CQRS.
-- [⚡ **Diagrama de Secuencia Transaccional (F2/F3):**](docs/diagrama-secuencia-transaccional.md) Ciclo de vida de `POST /movimientos`, balance contable dinámico, validadores SOLID y bloqueo optimista `xmin`.
-- [🔄 **Diagrama del Reporte CQRS y Sincronización Asíncrona (F4):**](docs/diagrama-reporte-cqrs.md) Consulta cruzada de estados de cuenta con latencia de sub-milisegundo sin acoplamiento HTTP síncrono.
-- [🧩 **Diagrama de Clean Architecture (Nivel Micro / Capas):**](docs/diagrama-clean-architecture.md) Puertos y adaptadores, núcleo de dominio POCO puro y principio de inversión de dependencias (DIP).
-- [🏛️ **Diagrama de Arquitectura de Microservicios:**](docs/diagrama-entidad-relacion.md#2-️-diagrama-de-arquitectura-de-microservicios) Topología macro de contenedores Docker, RabbitMQ y Observabilidad OpenTelemetry (.NET Aspire).
-
+- **Unitarias:** Dominio de `Cliente` y reglas de negocio de `MovimientoService`.
+- **Integración:** Flujo bancario completo con base de datos real en Testcontainers (`BankingFlowIntegrationTests`).
+- **Arquitectura:** Verificación automática de reglas de Clean Architecture con `NetArchTest`.
 
 ---
 
-## 🚀 Integración Continua (CI/CD)
+## 📁 Estructura del Repositorio
 
-- **Azure DevOps Pipeline:** [`azure-pipelines.yml`](azure-pipelines.yml)
-- **GitHub Actions Workflow:** [`.github/workflows/ci-cd.yml`](.github/workflows/ci-cd.yml)
-
-
-
-
-
+- `src/`: Código fuente de `ClienteService` y `CuentaMovimientoService`.
+- `tests/`: Suites de pruebas unitarias, de integración y arquitectura.
+- `docs/`: Diagramas de arquitectura y capturas del sistema.
+- `BaseDatos.sql`: Script DDL físico de PostgreSQL.
+- `devsu-banking.postman_collection.json`: Colección de pruebas de Postman.
+- `OBJETIVO.md`: Enunciado y requerimientos oficiales de la prueba técnica.
+- `docker-compose.yml`: Orquestador de contenedores.

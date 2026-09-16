@@ -58,31 +58,9 @@ Thumbs.db
 *.log
 
 # ------------------------------------------
-# 📚 Internal Documentation & AI Specs (Local Only)
+# 🏢 Local Notes & Temporary Files
 # ------------------------------------------
 AGENTS.md
 CLAUDE.md
-OBJETIVO.md
-CARRILES_DE_DISENO.md
-ARQUITECTURA_Y_PATRONES_INMUTABLES.md
-DIAGRAMA_ENTIDAD_RELACION.md
-DICCIONARIO_DE_DATOS_Y_TIPOS.md
-ESTRATEGIA_DE_PRUEBAS_Y_CALIDAD.md
-HOJA_DE_RUTA.md
-INFRAESTRUCTURA_Y_COMUNICACION.md
-OBSERVABILIDAD_Y_TELEMETRIA.md
-PIPELINE_CICD_Y_RAMAS.md
-PRINCIPIOS_SOLID_Y_BUENAS_PRACTICAS.md
-SEGURIDAD_Y_PROTECCION_DATOS.md
-specs/
-tests-ai/
-test-ai/
-.agents/
-skills/
-.skills/
-.github/copilot-instructions.md
+*.local.md
 sonar-local.sh
-DOCUMENTACION_TECNICA_CAMBIOS.md
-MAPA_DE_VALIDACIONES_Y_ERRORES.md
-
-

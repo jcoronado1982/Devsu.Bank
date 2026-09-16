@@ -136,6 +136,18 @@ BEGIN
     VALUES ('20260914161328_RenamePersonaIdColumn', '9.0.4');
     END IF;
 END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260916220000_ReservarRangoIdentidadSeedProyecciones') THEN
+        PERFORM setval(
+            pg_get_serial_sequence('personas', 'persona_id'),
+            GREATEST(1000, COALESCE((SELECT MAX(persona_id) FROM personas), 0) + 1),
+            false);
+        INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+        VALUES ('20260916220000_ReservarRangoIdentidadSeedProyecciones', '9.0.4');
+    END IF;
+END $EF$;
 COMMIT;
 
 
@@ -455,6 +467,61 @@ BEGIN
     IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260914224845_AddClienteProyeccionAndLedgerTrigger') THEN
     INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
     VALUES ('20260914224845_AddClienteProyeccionAndLedgerTrigger', '9.0.4');
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260915100000_AddCupoDiarioLedgerTrigger') THEN
+    CREATE OR REPLACE FUNCTION fn_validar_saldo_ledger()
+    RETURNS TRIGGER AS $$
+    DECLARE
+        v_saldo_inicial NUMERIC(18,2);
+        v_saldo_acumulado NUMERIC(18,2);
+        v_saldo_anterior NUMERIC(18,2);
+        v_retirado_hoy NUMERIC(18,2);
+    BEGIN
+        -- Bloquear la fila de la cuenta para serializar transacciones concurrentes (EB-08)
+        SELECT saldo_inicial INTO v_saldo_inicial
+        FROM cuentas
+        WHERE numero_cuenta = NEW.numero_cuenta
+        FOR UPDATE;
+
+        IF NOT FOUND THEN
+            RETURN NEW;
+        END IF;
+
+        -- Obtener el saldo acumulado antes de este nuevo movimiento
+        SELECT COALESCE(SUM(valor), 0.00) INTO v_saldo_acumulado
+        FROM movimientos
+        WHERE numero_cuenta = NEW.numero_cuenta;
+
+        v_saldo_anterior := v_saldo_inicial + v_saldo_acumulado;
+
+        -- EB-03: cupo diario acumulado de retiros, recalculado dentro del mismo lock de fila
+        IF NEW.valor < 0 THEN
+            SELECT COALESCE(SUM(ABS(valor)), 0.00) INTO v_retirado_hoy
+            FROM movimientos
+            WHERE numero_cuenta = NEW.numero_cuenta
+              AND valor < 0
+              AND fecha >= date_trunc('day', NEW.fecha)
+              AND fecha < date_trunc('day', NEW.fecha) + interval '1 day';
+
+            IF v_retirado_hoy + ABS(NEW.valor) > 1000.00 THEN
+                RAISE EXCEPTION 'Cupo diario Excedido' USING ERRCODE = 'P0001';
+            END IF;
+        END IF;
+
+        -- Asignar el saldo exacto resultante secuencial acumulado
+        -- Si el saldo resultante es negativo, PostgreSQL disparará automáticamente CK_movimientos_saldo
+        NEW.saldo := v_saldo_anterior + NEW.valor;
+
+        RETURN NEW;
+    END;
+    $$ LANGUAGE plpgsql;
+
+    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+    VALUES ('20260915100000_AddCupoDiarioLedgerTrigger', '9.0.4');
     END IF;
 END $EF$;
 COMMIT;
