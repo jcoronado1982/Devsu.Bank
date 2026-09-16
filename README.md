@@ -149,6 +149,18 @@ dotnet test
 
 ---
 
+## 🔄 Integración Continua y Despliegue (CI/CD)
+
+El proyecto cuenta con un pipeline automatizado en **Azure DevOps** ([`azure-pipelines.yml`](azure-pipelines.yml)) que valida la solución en cada `push` o `Pull Request`:
+
+![Comprobación del Pipeline CI/CD en Azure DevOps](docs/ci-cd.png)
+
+- **Compilación y Empaquetado:** Validación limpia bajo .NET 9 Release con cero errores.
+- **Validación Automatizada:** Ejecución de pruebas unitarias, de arquitectura y de integración con PostgreSQL efímero en Testcontainers.
+- **Trazabilidad de Ejecución:** Integración continua directa vinculada al repositorio en GitHub.
+
+---
+
 ## 📁 Estructura del Repositorio
 
 - `src/`: Código fuente de `ClienteService` y `CuentaMovimientoService`.
