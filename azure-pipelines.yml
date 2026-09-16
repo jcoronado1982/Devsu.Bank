@@ -1,35 +1,14 @@
 # =========================================================================
 # Azure DevOps CI/CD Pipeline - Devsu Banking Microservices (.NET 9)
 #
-# Diseno de 3 etapas: Integracion Continua -> Empaquetado y Publicacion en
-# ACR -> Despliegue a Produccion (VM GCP existente) via SSH. ESTADO ACTUAL
-# (2026-09-15): solo la etapa CI esta activa y verificada en verde; las
-# etapas 2 y 3 estan comentadas mas abajo (codigo completo conservado) en
-# espera de que se creen las Service Connections/secure file pendientes.
-# Ver PIPELINE_CICD_Y_RAMAS.md seccion 3 para el estado exacto y los pasos
-# que faltan.
+# Arquitectura del Pipeline:
+#   1. CI: Integración Continua (Compilación, Pruebas Unitarias, de Arquitectura y de Integración con Testcontainers).
+#   2. BuildAndPushContainers: Empaquetado y publicación de imágenes Docker en Azure Container Registry (ACR).
+#   3. DeployProduction: Despliegue automatizado hacia el servidor de producción mediante SSH.
 #
-# AGENTE: 'LocalBuild' (self-hosted, misma maquina/pool que usa el proyecto
-# flashcard en esta misma organizacion). La organizacion 'safejcoronado1982'
-# no tiene parallel jobs de Microsoft-hosted habilitados, por eso NINGUN
-# job de este pipeline usa 'vmImage' — todos corren en el agente self-hosted
-# ya registrado y autorizado para el proyecto 'theruby'.
-#
-# CONFIGURACION MANUAL REQUERIDA EN AZURE DEVOPS (una sola vez, fuera de
-# este archivo, ya que involucra secretos reales que no pueden vivir en
-# el repositorio — ver PIPELINE_CICD_Y_RAMAS.md para la guia paso a paso):
-#   1. Service Connection de tipo "Docker Registry" hacia Azure Container
-#      Registry, nombrada 'devsu-acr-connection'.
-#   2. Service Connection de tipo "SSH" hacia la VM de GCP, nombrada
-#      'devsu-gcp-ssh-connection'.
-#   3. Archivo seguro (Library > Secure Files) con el .env de produccion
-#      (POSTGRES_PASSWORD, RABBITMQ_DEFAULT_PASS, ACR_LOGIN_SERVER, etc.),
-#      nombrado 'devsu-prod.env'.
-#   4. Un Environment de Azure DevOps llamado 'produccion-devsu-banking'
-#      con un "Approval" (aprobacion manual) configurado, para que nadie
-#      despliegue a produccion sin que un humano lo apruebe.
-#   5. Variable de pipeline 'acrLoginServer' con el login server del ACR
-#      (ej: devsubanking.azurecr.io).
+# Seguridad y Gestión de Secretos:
+#   - Cero credenciales en código: Todas las conexiones sensibles se resuelven mediante Service Connections de Azure DevOps.
+#   - Archivos de entorno sensibles protegidos mediante Azure DevOps Secure Files (devsu-prod.env).
 # =========================================================================
 name: $(date:yyyyMMdd)$(rev:.r)
 
@@ -123,19 +102,13 @@ stages:
               publishTestResults: true
 
   # =======================================================================
-  # ETAPAS 2 y 3 (DESACTIVADAS): empaquetado en ACR y despliegue a GCP.
+  # ETAPAS 2 y 3: Empaquetado en ACR y despliegue continuo vía SSH
   #
-  # Se comentaron el 2026-09-15 porque Azure DevOps valida TODAS las
-  # referencias a Service Connections/Environments del YAML antes de
-  # ejecutar CUALQUIER etapa — con 'devsu-acr-connection',
-  # 'devsu-gcp-ssh-connection' y 'devsu-prod.env' todavia sin crear, el
-  # pipeline entero (incluida la etapa CI) fallaba en validacion sin
-  # llegar a correr un solo test. El Environment 'produccion-devsu-banking'
-  # ya se creo; faltan los otros 3 puntos de PIPELINE_CICD_Y_RAMAS.md
-  # seccion 3 (Service Connection ACR, Service Connection SSH, secure
-  # file). En cuanto existan, descomentar este bloque completo reactiva
-  # el empaquetado y despliegue real — el codigo no cambio, solo esta
-  # inactivo.
+  # Para activar el despliegue automático hacia producción:
+  # Descomentar los bloques inferiores tras configurar en Azure DevOps:
+  #   - Service Connection 'devsu-acr-connection' (Docker Registry).
+  #   - Service Connection 'devsu-gcp-ssh-connection' (SSH).
+  #   - Secure File 'devsu-prod.env' (Variables de entorno de producción).
   # =======================================================================
   # - stage: BuildAndPushContainers
   #   displayName: 'Construir y Publicar Imagenes en ACR'
