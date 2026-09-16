@@ -56,6 +56,11 @@ titulo "2/4  Construyendo y levantando los contenedores"
 echo "     La primera vez descarga las imagenes base: puede tardar varios minutos."
 echo
 
+if [ ! -f .env ] && [ -f .env.example ]; then
+    echo "     Archivo .env no encontrado. Creando a partir de .env.example..."
+    cp .env.example .env
+fi
+
 if ! $COMPOSE up --build -d; then
     echo
     error "Fallo el arranque de los contenedores."
@@ -176,7 +181,7 @@ ${NEGRITA}Solucion levantada${FIN}
     Reportes .................. "$CUENTAS_URL/reportes?fecha=2022-01-01,2026-12-31&cliente=Jose Lema"
 
   Herramientas de apoyo
-    RabbitMQ (devsu_admin / devsu_rabbit_secret_pass) ... http://localhost:15672
+    RabbitMQ (devsu_admin / credenciales en .env) ....... http://localhost:15672
     Base de datos clientes ............................. http://localhost:8089
     Base de datos cuentas .............................. http://localhost:8090
     Trazas y metricas (OpenTelemetry) .................. http://localhost:18888

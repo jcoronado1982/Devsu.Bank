@@ -50,6 +50,11 @@ Titulo '2/4  Construyendo y levantando los contenedores'
 Write-Host '       La primera vez descarga las imagenes base: puede tardar varios minutos.'
 Write-Host ''
 
+if (-not (Test-Path '.env') -and (Test-Path '.env.example')) {
+    Write-Host '       Archivo .env no encontrado. Creando a partir de .env.example...'
+    Copy-Item '.env.example' '.env'
+}
+
 if ($Compose -eq 'docker compose') { docker compose up --build -d } else { docker-compose up --build -d }
 
 if ($LASTEXITCODE -ne 0) {
@@ -175,7 +180,7 @@ Write-Host @"
     Reportes .................. $CuentasUrl/reportes?fecha=2022-01-01,2026-12-31&cliente=Jose Lema
 
   Herramientas de apoyo
-    RabbitMQ (devsu_admin / devsu_rabbit_secret_pass) ... http://localhost:15672
+    RabbitMQ (devsu_admin / credenciales en .env) ....... http://localhost:15672
     Base de datos clientes ............................. http://localhost:8089
     Base de datos cuentas .............................. http://localhost:8090
     Trazas y metricas (OpenTelemetry) .................. http://localhost:18888
