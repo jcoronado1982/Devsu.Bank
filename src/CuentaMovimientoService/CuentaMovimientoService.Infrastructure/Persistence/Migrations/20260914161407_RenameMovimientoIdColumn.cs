@@ -1,13 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace CuentaMovimientoService.Infrastructure.Persistence.Migrations
 {
-    /// <inheritdoc />
     public partial class RenameMovimientoIdColumn : Migration
     {
-        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.RenameColumn(
@@ -16,7 +14,6 @@ namespace CuentaMovimientoService.Infrastructure.Persistence.Migrations
                 newName: "movimiento_id");
         }
 
-        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.RenameColumn(

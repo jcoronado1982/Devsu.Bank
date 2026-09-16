@@ -11,10 +11,6 @@ using OpenTelemetry.Trace;
 
 namespace Devsu.Banking.ServiceDefaults;
 
-// Patrón canónico .NET Aspire (OBSERVABILIDAD_Y_TELEMETRIA.md §3): configuración de
-// observabilidad idéntica para ClienteService y CuentaMovimientoService, sin duplicar código.
-// Vive en un proyecto neutral porque ninguna capa de negocio debe conocer OpenTelemetry;
-// solo el host (Api/Program.cs) lo invoca en el arranque.
 public static class Extensions
 {
     public static IHostApplicationBuilder AddServiceDefaults(this IHostApplicationBuilder builder)
@@ -44,12 +40,10 @@ public static class Extensions
             {
                 tracing.AddAspNetCoreInstrumentation()
                        .AddHttpClientInstrumentation()
-                       .AddSource("MassTransit")   // Traza distribuida: Publish/Consume vía RabbitMQ (traceparent W3C)
-                       .AddSource("Npgsql");        // Traza distribuida: consultas PostgreSQL
+                       .AddSource("MassTransit")
+                       .AddSource("Npgsql");
             });
 
-        // Exportador estándar universal OTLP (Aspire Dashboard, Datadog, GCP, etc.). Sin vendors
-        // propietarios: solo se activa si el entorno declara un colector OTLP, agnóstico de proveedor.
         var otlpEndpoint = builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"];
         if (!string.IsNullOrWhiteSpace(otlpEndpoint))
         {
@@ -69,7 +63,6 @@ public static class Extensions
 
     public static WebApplication MapDefaultEndpoints(this WebApplication app)
     {
-        // Health Checks de Liveness y Readiness
         app.MapHealthChecks("/health");
         app.MapHealthChecks("/alive", new HealthCheckOptions
         {

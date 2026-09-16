@@ -3,9 +3,6 @@ using System.Diagnostics.Metrics;
 
 namespace CuentaMovimientoService.Application.Observability;
 
-// Instrumentación estándar de .NET (System.Diagnostics), no de un vendor concreto: Application
-// solo emite Activities/Metrics; OpenTelemetry se suscribe a estas fuentes desde el host
-// (Devsu.Banking.ServiceDefaults), preservando el agnosticismo de proveedor (OBSERVABILIDAD_Y_TELEMETRIA.md §6.5).
 public static class LedgerTelemetry
 {
     public const string Name = "Devsu.CuentaMovimientoService.Ledger";

@@ -6,11 +6,6 @@ using Npgsql;
 
 namespace ClienteService.Infrastructure.Persistence;
 
-/// <summary>
-/// Implementación EF Core del patrón Unit of Work: envuelve ClienteDbContext.SaveChangesAsync
-/// y traduce la violación del índice único de identificación (defensa en profundidad de EB-06)
-/// en la misma excepción de negocio que el chequeo anticipado en ClienteService.
-/// </summary>
 public class ClienteUnitOfWork : IUnitOfWork
 {
     private readonly ClienteDbContext _context;
@@ -32,11 +27,6 @@ public class ClienteUnitOfWork : IUnitOfWork
             ConstraintName: "IX_personas_identificacion"
         })
         {
-            // Defensa en profundidad (EB-06): dos creaciones casi simultáneas con la misma
-            // identificación pueden pasar ambas la verificación previa en ClienteService (datos
-            // obsoletos) antes de que cualquiera confirme su INSERT. El índice único de Postgres
-            // rechaza la segunda; se traduce a la misma excepción de negocio que el chequeo
-            // anticipado, para que el middleware responda 409 en vez de 500.
             var identificacion = _context.ChangeTracker.Entries<Cliente>()
                 .FirstOrDefault(e => e.State == EntityState.Added)?
                 .Entity.Identificacion ?? string.Empty;

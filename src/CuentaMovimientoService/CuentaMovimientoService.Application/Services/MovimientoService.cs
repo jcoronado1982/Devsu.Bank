@@ -40,7 +40,6 @@ public class MovimientoService : IMovimientoService
 
     public async Task<MovimientoDto> RegistrarMovimientoAsync(RegistrarMovimientoDto dto)
     {
-        // EB-05: Movimiento con valor 0.00 rechazado (guard clause, no es una regla de negocio del ledger)
         if (dto.Valor == 0m)
         {
             _logger?.LogWarning("Intento de registrar movimiento con valor cero en cuenta {NumeroCuenta}", dto.NumeroCuenta);
@@ -50,9 +49,6 @@ public class MovimientoService : IMovimientoService
         var cuenta = await _cuentaRepo.ObtenerPorNumeroCuentaAsync(dto.NumeroCuenta)
                      ?? throw new CuentaNotFoundException(dto.NumeroCuenta);
 
-        // EB-04/EB-01/EB-03: reglas de negocio del ledger, una clase Strategy por regla (Open/Closed).
-        // Span propio para que la traza distribuida (HTTP -> Application -> EF Core -> MassTransit)
-        // muestre el costo exacto de la validación financiera (OBSERVABILIDAD_Y_TELEMETRIA.md §2).
         using (var actividad = LedgerTelemetry.ActivitySource.StartActivity("ValidarReglasNegocioEB01_EB03"))
         {
             actividad?.SetTag("devsu.numero_cuenta", dto.NumeroCuenta);

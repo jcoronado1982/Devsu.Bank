@@ -53,9 +53,17 @@ El proyecto cuenta con suites completas de pruebas unitarias, de arquitectura y 
 # Compilación limpia de la solución
 dotnet build --no-incremental
 
-# Ejecución de todas las pruebas automatizadas (146 tests)
+# Ejecución de todas las pruebas automatizadas (177 tests)
 dotnet test
 ```
+
+| Suite | Pruebas |
+| :--- | ---: |
+| `tests/ClienteService.UnitTests` | 59 |
+| `tests/CuentaMovimientoService.UnitTests` | 83 |
+| `tests/ArchitectureTests` | 10 |
+| `tests/CuentaMovimientoService.IntegrationTests` | 25 |
+| **Total** | **177** |
 
 ### Detalle de Suites
 - **Pruebas de Arquitectura y Seguridad (`tests/ArchitectureTests`):** Valida con `NetArchTest.Rules` que las capas de Dominio y Aplicación no se acoplen a infraestructura ni frameworks, y verifica la sanitización estricta de DTOs.
@@ -76,9 +84,17 @@ Para ejecutar las pruebas de integración de endpoints por consola mediante Newm
 
 ---
 
-## 🗄️ Base de Datos
+## 🗄️ Base de Datos y Diagramas de Arquitectura
 
 El script DDL con la creación de tablas, índices y restricciones relacionales se encuentra disponible en [`BaseDatos.sql`](BaseDatos.sql).
+
+Documentación técnica y diagramas de diseño:
+- [📊 **Diagrama Entidad - Relación y Modelo Físico:**](docs/diagrama-entidad-relacion.md) Esquema Database-per-Service en PostgreSQL 16 y desacoplamiento CQRS.
+- [⚡ **Diagrama de Secuencia Transaccional (F2/F3):**](docs/diagrama-secuencia-transaccional.md) Ciclo de vida de `POST /movimientos`, balance contable dinámico, validadores SOLID y bloqueo optimista `xmin`.
+- [🔄 **Diagrama del Reporte CQRS y Sincronización Asíncrona (F4):**](docs/diagrama-reporte-cqrs.md) Consulta cruzada de estados de cuenta con latencia de sub-milisegundo sin acoplamiento HTTP síncrono.
+- [🧩 **Diagrama de Clean Architecture (Nivel Micro / Capas):**](docs/diagrama-clean-architecture.md) Puertos y adaptadores, núcleo de dominio POCO puro y principio de inversión de dependencias (DIP).
+- [🏛️ **Diagrama de Arquitectura de Microservicios:**](docs/diagrama-entidad-relacion.md#2-️-diagrama-de-arquitectura-de-microservicios) Topología macro de contenedores Docker, RabbitMQ y Observabilidad OpenTelemetry (.NET Aspire).
+
 
 ---
 
@@ -86,6 +102,7 @@ El script DDL con la creación de tablas, índices y restricciones relacionales 
 
 - **Azure DevOps Pipeline:** [`azure-pipelines.yml`](azure-pipelines.yml)
 - **GitHub Actions Workflow:** [`.github/workflows/ci-cd.yml`](.github/workflows/ci-cd.yml)
+
 
 
 

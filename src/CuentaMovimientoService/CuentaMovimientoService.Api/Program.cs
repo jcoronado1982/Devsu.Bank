@@ -19,22 +19,15 @@ using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Logging
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Logging.AddDebug();
 
-// Observabilidad Cloud-Native de punta a punta: traces (ASP.NET Core, HttpClient, Npgsql,
-// MassTransit), métricas y logs enriquecidos con TraceId, exportados vía OTLP al Aspire
-// Dashboard (OBSERVABILIDAD_Y_TELEMETRIA.md).
 builder.AddServiceDefaults();
 
-// Fuente de trazas/métricas propia del ledger financiero (span ValidarReglasNegocioEB01_EB03
-// y contadores movimientos_total / movimientos_fallidos_*), ver Application/Observability.
 builder.Services.ConfigureOpenTelemetryTracerProvider(t => t.AddSource(LedgerTelemetry.Name));
 builder.Services.ConfigureOpenTelemetryMeterProvider(m => m.AddMeter(LedgerTelemetry.Name));
 
-// Conexión a PostgreSQL (Inyección dinámica de secretos / Cero contraseñas en código)
 static string? NuloSiVacio(string? valor) => string.IsNullOrWhiteSpace(valor) ? null : valor;
 
 var connectionString = NuloSiVacio(builder.Configuration.GetConnectionString("PostgresDb"))
@@ -47,14 +40,12 @@ builder.Services.AddDbContext<CuentaMovimientoDbContext>(options =>
     options.UseNpgsql(connectionString);
 });
 
-// Puertos y Adaptadores (Clean Architecture)
 builder.Services.AddScoped<ICuentaRepository, CuentaRepository>();
 builder.Services.AddScoped<IMovimientoRepository, MovimientoRepository>();
 builder.Services.AddScoped<IClienteExistsPort, ClienteExistsPort>();
 builder.Services.AddScoped<IClienteInfoPort, ClienteExistsPort>();
 builder.Services.AddScoped<IUnitOfWork, CuentaMovimientoUnitOfWork>();
 
-// Validadores de reglas de negocio del ledger (Strategy, sin estado -> Transient)
 builder.Services.AddTransient<IMovimientoValidator, CuentaActivaValidator>();
 builder.Services.AddTransient<IMovimientoValidator, SaldoSuficienteValidator>();
 builder.Services.AddTransient<IMovimientoValidator, CupoDiarioValidator>();
@@ -63,12 +54,9 @@ builder.Services.AddScoped<ICuentaService, CuentaService>();
 builder.Services.AddScoped<IMovimientoService, MovimientoService>();
 builder.Services.AddScoped<IReporteService, ReporteService>();
 
-// Puerto de consumo de eventos de integración (agnóstico de MassTransit); los adaptadores
-// técnicos en Infrastructure.Messaging son el único punto que conoce MassTransit.IConsumer<T>.
 builder.Services.AddScoped<IIntegrationEventHandler<ClienteCreadoEvent>, ClienteCreadoConsumer>();
 builder.Services.AddScoped<IIntegrationEventHandler<ClienteEliminadoEvent>, ClienteEliminadoConsumer>();
 
-// MassTransit con RabbitMQ y Consumidor de Clientes
 var rabbitHost = builder.Configuration["RabbitMq:Host"] ?? builder.Configuration["RabbitMq__Host"] ?? "localhost";
 var rabbitUser = builder.Configuration["RabbitMq:User"] ?? builder.Configuration["RabbitMq__User"] ?? "devsu_admin";
 var rabbitPass = NuloSiVacio(builder.Configuration["RabbitMq:Password"])
@@ -103,7 +91,6 @@ builder.Services.AddMassTransit(x =>
     });
 });
 
-// Controllers & HealthChecks
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -116,9 +103,6 @@ builder.Services.AddHealthChecks()
 
 builder.Services.AddEndpointsApiExplorer();
 
-// Documentación OpenAPI/Swagger publicada en /swagger (ver README). Se registra sin
-// restringirla a Development: los contenedores corren con ASPNETCORE_ENVIRONMENT=Production
-// y la UI es el punto de entrada documentado para validar los endpoints manualmente.
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
@@ -133,7 +117,6 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
-// Auto-migración en arranque (resiliente para Docker)
 using (var scope = app.Services.CreateScope())
 {
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
@@ -153,7 +136,6 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// OWASP Security Headers
 app.Use(async (context, next) =>
 {
     context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
@@ -162,7 +144,6 @@ app.Use(async (context, next) =>
     await next();
 });
 
-// Middleware Global de Excepciones
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
 app.UseSwagger();
@@ -177,7 +158,4 @@ app.MapControllers();
 
 app.Run();
 
-// Necesario para que CuentaMovimientoService.IntegrationTests use WebApplicationFactory<Program>
-// (top-level statements generan una clase Program implícita e internal; hacerla partial y pública
-// la expone al ensamblado de tests sin tocar tests/).
 public partial class Program { }

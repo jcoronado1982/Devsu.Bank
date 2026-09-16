@@ -1,8 +1,5 @@
 namespace CuentaMovimientoService.Domain.Entities;
 
-/// <summary>
-/// Catálogo normalizado de Tipos de Cuenta Bancaria (3NF / ISO 20022).
-/// </summary>
 public class TipoCuentaItem
 {
     public short TipoCuentaId { get; private set; }

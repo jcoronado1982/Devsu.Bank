@@ -12,9 +12,6 @@ public class MovimientoConfiguration : IEntityTypeConfiguration<Movimiento>
         {
             tb.HasCheckConstraint("CK_movimientos_valor", "valor <> 0");
             tb.HasCheckConstraint("CK_movimientos_saldo", "saldo >= 0");
-            // Acepta "Deposito" y "Depósito" (con y sin tilde): el dominio genera el valor sin
-            // tilde (MovimientoService), pero el constraint tolera ambas variantes por si se
-            // inserta directamente con acento (seeds, scripts manuales).
             tb.HasCheckConstraint("CK_movimientos_tipo", "tipo_movimiento IN ('Deposito', 'Retiro', 'Depósito')");
         });
 
@@ -46,7 +43,7 @@ public class MovimientoConfiguration : IEntityTypeConfiguration<Movimiento>
 
         builder.Property(m => m.NumeroCuenta)
             .HasColumnName("numero_cuenta")
-            .HasMaxLength(34) // Estándar Internacional ISO 13616 (IBAN) / NACHA / CBU
+            .HasMaxLength(34)
             .IsRequired();
 
         builder.HasIndex(m => m.NumeroCuenta);

@@ -4,17 +4,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace CuentaMovimientoService.Infrastructure.Persistence.Migrations
 {
-    /// <inheritdoc />
     public partial class AddCupoDiarioLedgerTrigger : Migration
     {
-        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            // EB-03 defense-in-depth: dos retiros casi simultáneos sobre la misma cuenta pueden
-            // pasar cada uno la validación de cupo diario en C# (fuera del lock de fila) antes de
-            // que cualquiera de los dos confirme su INSERT, excediendo juntos el límite de $1000.
-            // Se extiende el trigger existente (que ya toma FOR UPDATE sobre la cuenta) para que
-            // también recalcule el retirado acumulado del día dentro del mismo lock.
             migrationBuilder.Sql(@"
 CREATE OR REPLACE FUNCTION fn_validar_saldo_ledger()
 RETURNS TRIGGER AS $$
@@ -65,7 +58,6 @@ $$ LANGUAGE plpgsql;
 ");
         }
 
-        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.Sql(@"

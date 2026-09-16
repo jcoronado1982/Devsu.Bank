@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 
 namespace CuentaMovimientoService.Application.Validators;
 
-// EB-04: Transacción sobre cuenta inactiva.
 public class CuentaActivaValidator : IMovimientoValidator
 {
     private readonly ILogger<CuentaActivaValidator>? _logger;

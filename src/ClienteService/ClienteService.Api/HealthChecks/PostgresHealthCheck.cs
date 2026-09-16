@@ -3,12 +3,6 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace ClienteService.Api.HealthChecks;
 
-/// <summary>
-/// Health check de disponibilidad de PostgreSQL, registrado con el tag "ready" (Program.cs)
-/// para diferenciarlo de un chequeo de liveness básico: comprueba que la base de datos
-/// responda, no solo que el proceso de la API esté vivo. Requerido por la guía de
-/// observabilidad del proyecto (endpoints /health y /alive).
-/// </summary>
 public class PostgresHealthCheck : IHealthCheck
 {
     private readonly ClienteDbContext _dbContext;

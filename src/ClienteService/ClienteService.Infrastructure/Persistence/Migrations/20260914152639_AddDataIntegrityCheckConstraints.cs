@@ -1,13 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace ClienteService.Infrastructure.Persistence.Migrations
 {
-    /// <inheritdoc />
     public partial class AddDataIntegrityCheckConstraints : Migration
     {
-        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterColumn<short>(
@@ -39,7 +37,6 @@ namespace ClienteService.Infrastructure.Persistence.Migrations
                 sql: "length(trim(contrasena)) >= 4");
         }
 
-        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropCheckConstraint(

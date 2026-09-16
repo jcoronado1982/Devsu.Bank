@@ -136,5 +136,23 @@ BEGIN
     VALUES ('20260914161328_RenamePersonaIdColumn', '9.0.4');
     END IF;
 END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260916220000_ReservarRangoIdentidadSeedProyecciones') THEN
+    PERFORM setval(
+        pg_get_serial_sequence('personas', 'persona_id'),
+        GREATEST(1000, COALESCE((SELECT MAX(persona_id) FROM personas), 0) + 1),
+        false);
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260916220000_ReservarRangoIdentidadSeedProyecciones') THEN
+    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+    VALUES ('20260916220000_ReservarRangoIdentidadSeedProyecciones', '9.0.4');
+    END IF;
+END $EF$;
 COMMIT;
 

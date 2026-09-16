@@ -17,7 +17,7 @@ public class CuentaConfiguration : IEntityTypeConfiguration<Cuenta>
         builder.HasKey(c => c.NumeroCuenta);
         builder.Property(c => c.NumeroCuenta)
             .HasColumnName("numero_cuenta")
-            .HasMaxLength(34) // Estándar Internacional ISO 13616 (IBAN) / NACHA / CBU
+            .HasMaxLength(34)
             .IsRequired();
 
         builder.Property(c => c.TipoCuentaId)
@@ -47,13 +47,11 @@ public class CuentaConfiguration : IEntityTypeConfiguration<Cuenta>
 
         builder.HasIndex(c => c.ClienteId);
 
-        // Configuración de la relación 1 a Muchos con Movimientos
         builder.HasMany(c => c.Movimientos)
             .WithOne(m => m.Cuenta)
             .HasForeignKey(m => m.NumeroCuenta)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Control de concurrencia optimista nativo de PostgreSQL para prevenir sobregiros en carreras
         builder.Property<uint>("xmin")
             .HasColumnType("xid")
             .ValueGeneratedOnAddOrUpdate()

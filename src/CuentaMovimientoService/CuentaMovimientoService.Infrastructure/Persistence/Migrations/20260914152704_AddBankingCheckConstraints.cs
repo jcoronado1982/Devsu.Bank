@@ -1,13 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace CuentaMovimientoService.Infrastructure.Persistence.Migrations
 {
-    /// <inheritdoc />
     public partial class AddBankingCheckConstraints : Migration
     {
-        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddCheckConstraint(
@@ -41,7 +39,6 @@ namespace CuentaMovimientoService.Infrastructure.Persistence.Migrations
                 sql: "tipo_cuenta IN ('Ahorros', 'Corriente')");
         }
 
-        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropCheckConstraint(

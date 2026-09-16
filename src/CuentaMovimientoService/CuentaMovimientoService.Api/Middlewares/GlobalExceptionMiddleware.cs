@@ -5,9 +5,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CuentaMovimientoService.Api.Middlewares;
 
-// Único punto de traducción excepción-de-negocio -> HTTP en toda la Api: los controladores
-// nunca hacen try/catch de estas excepciones, así se garantiza que el mensaje y código de
-// cada caso EB-0x sea siempre el mismo sin importar qué endpoint lo dispare.
 public class GlobalExceptionMiddleware
 {
     private readonly RequestDelegate _next;
@@ -40,25 +37,25 @@ public class GlobalExceptionMiddleware
         {
             case SaldoNoDisponibleException saldoEx:
                 statusCode = HttpStatusCode.BadRequest;
-                mensaje = "Saldo no disponible"; // EB-01 Exacto
+                mensaje = "Saldo no disponible";
                 _logger.LogWarning("Transacción rechazada por saldo no disponible (EB-01)");
                 break;
 
             case CupoDiarioExcedidoException cupoEx:
                 statusCode = HttpStatusCode.BadRequest;
-                mensaje = "Cupo diario Excedido"; // EB-03 Exacto
+                mensaje = "Cupo diario Excedido";
                 _logger.LogWarning("Transacción rechazada por cupo diario excedido (EB-03)");
                 break;
 
             case CuentaInactivaException inactEx:
                 statusCode = HttpStatusCode.BadRequest;
-                mensaje = "Cuenta inactiva"; // EB-04 Exacto
+                mensaje = "Cuenta inactiva";
                 _logger.LogWarning("Transacción rechazada por cuenta inactiva (EB-04)");
                 break;
 
             case ClienteNoEncontradoException cliEx:
                 statusCode = HttpStatusCode.NotFound;
-                mensaje = "Cliente no encontrado"; // EB-07 Exacto
+                mensaje = "Cliente no encontrado";
                 _logger.LogWarning("Cliente no encontrado (EB-07)");
                 break;
 
@@ -88,7 +85,7 @@ public class GlobalExceptionMiddleware
 
             case DbUpdateConcurrencyException:
                 statusCode = HttpStatusCode.Conflict;
-                mensaje = "La cuenta fue modificada por otra operación, intente nuevamente"; // EB-08 (xmin)
+                mensaje = "La cuenta fue modificada por otra operación, intente nuevamente";
                 _logger.LogWarning("Conflicto de concurrencia optimista detectado (EB-08)");
                 break;
 

@@ -19,8 +19,6 @@ public class ClienteEliminadoConsumer : IIntegrationEventHandler<ClienteEliminad
     {
         _logger.LogInformation("Consumiendo ClienteEliminadoEvent para cliente ID {ClienteId}", evento.ClienteId);
 
-        // Soft-delete: se marca la proyeccion como inactiva en vez de borrarla,
-        // para preservar la integridad referencial con cuentas/movimientos (Append-Only).
         await _clienteInfoPort.DesactivarProyeccionAsync(evento.ClienteId);
 
         _logger.LogInformation("Proyección de cliente {ClienteId} desactivada exitosamente", evento.ClienteId);

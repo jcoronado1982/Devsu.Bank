@@ -4,8 +4,6 @@ namespace CuentaMovimientoService.Application.DTOs;
 
 public class ReporteClienteResponseDto
 {
-    // Se expone para que dos clientes con el mismo nombre completo se puedan distinguir en el
-    // JSON sin ambigüedad (el agrupamiento ya es por este id, no por el nombre — ver abajo).
     [JsonPropertyName("clienteId")]
     public long ClienteId { get; set; }
 
@@ -15,11 +13,6 @@ public class ReporteClienteResponseDto
     [JsonPropertyName("cuentas")]
     public List<ReporteCuentaResponseDto> Cuentas { get; set; } = new();
 
-    // Agrupa el listado plano de movimientos (uno por línea) en cliente -> cuentas -> movimientos,
-    // ya que un cliente puede tener varias cuentas y la búsqueda por nombre puede matchear varios clientes.
-    // Se agrupa por ClienteId (identidad real), NUNCA por el string del nombre: dos clientes
-    // distintos podrían compartir el mismo nombre completo, y agrupar solo por nombre mezclaría
-    // sus cuentas/movimientos bajo un mismo nodo del reporte.
     public static List<ReporteClienteResponseDto> AgruparDesdeMovimientos(IEnumerable<ReporteMovimientoDto> items)
     {
         return items

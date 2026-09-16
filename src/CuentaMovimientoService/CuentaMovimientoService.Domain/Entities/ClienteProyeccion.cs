@@ -1,9 +1,5 @@
 namespace CuentaMovimientoService.Domain.Entities;
 
-/// <summary>
-/// Proyección local de solo lectura de Clientes para mantener desacoplamiento de microservicios.
-/// Recibe datos asíncronamente desde ClienteService vía RabbitMQ / MassTransit.
-/// </summary>
 public class ClienteProyeccion
 {
     public long ClienteId { get; private set; }

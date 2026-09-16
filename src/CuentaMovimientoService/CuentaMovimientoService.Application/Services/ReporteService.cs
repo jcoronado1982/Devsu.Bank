@@ -7,9 +7,6 @@ namespace CuentaMovimientoService.Application.Services;
 
 public class ReporteService : IReporteService
 {
-    // Colombia y Ecuador comparten UTC-5 fijo, sin horario de verano.
-    // Offset fijo en vez de TimeZoneInfo.FindSystemTimeZoneById: las imágenes Alpine
-    // de los Dockerfiles de este proyecto no incluyen tzdata y lanzarían TimeZoneNotFoundException.
     private static readonly TimeZoneInfo ZonaHorariaReporte =
         TimeZoneInfo.CreateCustomTimeZone("Colombia", TimeSpan.FromHours(-5), "Hora Colombia", "Hora Colombia");
 
@@ -63,7 +60,6 @@ public class ReporteService : IReporteService
             }
         }
 
-        // EB-09: Si no hay movimientos, retorna lista vacía
         _logger?.LogInformation("Reporte generado con {Cantidad} registros para cliente ID {ClienteId}",
             resultado.Count, clienteId);
 
@@ -75,7 +71,6 @@ public class ReporteService : IReporteService
         var clienteIds = await ResolverClienteIdsAsync(cliente);
         if (clienteIds.Count == 0)
         {
-            // EB-09: Si no se encuentra el cliente, retorna array vacío []
             _logger?.LogInformation("Cliente '{Cliente}' no encontrado para reporte, retornando []", cliente);
             return Enumerable.Empty<ReporteMovimientoDto>();
         }
@@ -90,15 +85,8 @@ public class ReporteService : IReporteService
         return resultado;
     }
 
-    // Longitud mínima para la búsqueda parcial por nombre. El endpoint /reportes es anónimo
-    // (no hay autenticación en el alcance de este proyecto), así que sin este mínimo cualquiera
-    // podría pedir cliente=a y recibir el estado de cuenta de decenas de clientes reales de un
-    // solo golpe. No resuelve la falta de autenticación, pero acota el radio de exposición de
-    // una búsqueda de texto libre sin exigir login (control de seguridad y buenas prácticas).
     private const int LongitudMinimaBusquedaParcial = 3;
 
-    // Resuelve el filtro "cliente" en cascada: id interno (soporte técnico) -> identificación
-    // (documento, la vía real de un cliente bancario) -> nombre parcial (puede matchear varios).
     private async Task<IReadOnlyList<long>> ResolverClienteIdsAsync(string cliente)
     {
         var texto = cliente.Trim();
@@ -134,7 +122,6 @@ public class ReporteService : IReporteService
                     DateTime.SpecifyKind(DateTime.MaxValue, DateTimeKind.Utc));
         }
 
-        // Soporta formatos: "2022-01-01,2026-12-31", "2022-01-01 2026-12-31", "10/02/2022,28/02/2022"
         var separadores = new[] { ',', '|', ';' };
         var partes = fecha.Split(separadores, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 

@@ -32,6 +32,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\CuentaMovimientoService\CuentaMovimientoService.Domain\CuentaMovimientoService.Domain.csproj" />
     <ProjectReference Include="..\..\src\CuentaMovimientoService\CuentaMovimientoService.Application\CuentaMovimientoService.Application.csproj" />
     <ProjectReference Include="..\..\src\CuentaMovimientoService\CuentaMovimientoService.Infrastructure\CuentaMovimientoService.Infrastructure.csproj" />

@@ -30,7 +30,6 @@ public class TipoCuentaItemConfiguration : IEntityTypeConfiguration<TipoCuentaIt
         builder.HasIndex(t => t.Nombre)
             .IsUnique();
 
-        // Datos semilla oficiales del catálogo bancario
         builder.HasData(
             new TipoCuentaItem(1, "AHORRO", "Ahorros"),
             new TipoCuentaItem(2, "CORRIENTE", "Corriente")

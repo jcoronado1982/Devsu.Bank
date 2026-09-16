@@ -4,8 +4,6 @@ using MassTransit;
 
 namespace CuentaMovimientoService.Infrastructure.Messaging;
 
-// Adaptador técnico: es el único punto del sistema que conoce MassTransit.IConsumer<T>.
-// Delega toda la lógica de negocio al puerto IIntegrationEventHandler<T> (Application).
 public class ClienteCreadoMassTransitConsumer : IConsumer<ClienteCreadoEvent>
 {
     private readonly IIntegrationEventHandler<ClienteCreadoEvent> _handler;

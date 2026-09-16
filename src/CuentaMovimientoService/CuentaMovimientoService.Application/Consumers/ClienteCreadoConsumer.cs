@@ -5,9 +5,6 @@ using Microsoft.Extensions.Logging;
 
 namespace CuentaMovimientoService.Application.Consumers;
 
-// Mantiene la proyección de solo lectura de clientes (ClienteProyeccion) sincronizada de forma
-// asíncrona, sin llamadas HTTP hacia ClienteService. Es la fuente de datos que usa ReporteService
-// para resolver nombre/identificación al filtrar /reportes por "cliente".
 public class ClienteCreadoConsumer : IIntegrationEventHandler<ClienteCreadoEvent>
 {
     private readonly IClienteInfoPort _clienteInfoPort;

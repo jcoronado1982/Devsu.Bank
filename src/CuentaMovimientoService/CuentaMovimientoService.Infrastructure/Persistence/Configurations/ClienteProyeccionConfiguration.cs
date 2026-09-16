@@ -30,7 +30,6 @@ public class ClienteProyeccionConfiguration : IEntityTypeConfiguration<ClientePr
             .HasDefaultValue(true)
             .IsRequired();
 
-        // Datos semilla oficiales de OBJETIVO.md
         builder.HasData(
             new ClienteProyeccion(1, "Jose Lema", "1234567890", true),
             new ClienteProyeccion(2, "Marianela Montalvo", "0975489650", true),

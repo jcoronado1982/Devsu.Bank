@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 
 namespace CuentaMovimientoService.Application.Validators;
 
-// EB-01: Retiro mayor al saldo disponible.
 public class SaldoSuficienteValidator : IMovimientoValidator
 {
     private readonly ILogger<SaldoSuficienteValidator>? _logger;

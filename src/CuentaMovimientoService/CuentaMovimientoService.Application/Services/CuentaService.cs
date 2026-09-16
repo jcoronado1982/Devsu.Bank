@@ -7,9 +7,6 @@ using Microsoft.Extensions.Logging;
 
 namespace CuentaMovimientoService.Application.Services;
 
-// Orquesta F1 (CRU de Cuenta) validando la existencia del cliente dueño (EB-07) y el
-// número de cuenta único (409 Conflict) antes de persistir. No valida reglas de movimientos
-// (EB-01/03/04/05) — esas viven en MovimientoService/IMovimientoValidator.
 public class CuentaService : ICuentaService
 {
     private readonly ICuentaRepository _repo;
