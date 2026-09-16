@@ -53,17 +53,17 @@ El proyecto cuenta con suites completas de pruebas unitarias, de arquitectura y 
 # Compilación limpia de la solución
 dotnet build --no-incremental
 
-# Ejecución de todas las pruebas automatizadas (177 tests)
+# Ejecución de todas las pruebas automatizadas (76 tests)
 dotnet test
 ```
 
 | Suite | Pruebas |
 | :--- | ---: |
-| `tests/ClienteService.UnitTests` | 59 |
-| `tests/CuentaMovimientoService.UnitTests` | 83 |
+| `tests/ClienteService.UnitTests` | 13 |
+| `tests/CuentaMovimientoService.UnitTests` | 35 |
 | `tests/ArchitectureTests` | 10 |
-| `tests/CuentaMovimientoService.IntegrationTests` | 25 |
-| **Total** | **177** |
+| `tests/CuentaMovimientoService.IntegrationTests` | 18 |
+| **Total** | **76** |
 
 ### Detalle de Suites
 - **Pruebas de Arquitectura y Seguridad (`tests/ArchitectureTests`):** Valida con `NetArchTest.Rules` que las capas de Dominio y Aplicación no se acoplen a infraestructura ni frameworks, y verifica la sanitización estricta de DTOs.
