@@ -163,5 +163,5 @@ dotnet test
 ## 👤 Autor
 
 - **Jesús Alberto Coronado** - *Ingeniero de Software Senior .NET*
-- **Repositorio:** [https://github.com/jcoronado1982/Devsu.Banking](https://github.com/jcoronado1982/Devsu.Banking)
+- **Repositorio:** [https://github.com/jcoronado1982/Devsu.Bank](https://github.com/jcoronado1982/Devsu.Bank)
 
