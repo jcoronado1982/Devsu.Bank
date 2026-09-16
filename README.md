@@ -1,6 +1,6 @@
 # 🏛️ Devsu Banking Microservices (.NET 9)
 
-Solución de microservicios bancarios desarrollada para la prueba técnica de Devsu, basada en **.NET 9 (C# 13)**, **Clean Architecture**, **PostgreSQL 16** y mensajería asíncrona con **RabbitMQ** (MassTransit).
+Solución de microservicios bancarios desarrollada por **Jesús Alberto Coronado** para la prueba técnica de Devsu, basada en **.NET 9 (C# 13)**, **Clean Architecture**, **PostgreSQL 16** y mensajería asíncrona con **RabbitMQ** (MassTransit).
 
 ---
 
@@ -163,3 +163,5 @@ dotnet test
 ## 👤 Autor
 
 - **Jesús Alberto Coronado** - *Ingeniero de Software Senior .NET*
+- **Repositorio:** [https://github.com/jcoronado1982/Devsu.Banking](https://github.com/jcoronado1982/Devsu.Banking)
+
