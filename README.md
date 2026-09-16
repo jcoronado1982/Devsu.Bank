@@ -49,7 +49,7 @@ Para validar con **Postman**, solo se debe importar la colección [`devsu-bankin
 
 La solución implementa una arquitectura desacoplada de 2 microservicios con patrón **Database-per-Service** y comunicación asíncrona por eventos sobre RabbitMQ:
 
-![Arquitectura de Microservicios](docs/Arquitectura.png)
+![Arquitectura de Microservicios](docs/arquitectura.png)
 
 1. **`ClienteService` (Puerto 8081 / `https://clientes.launch.lat`):**
    - Gestión de `Persona` y `Cliente` (herencia Table-per-Type).
@@ -69,7 +69,7 @@ La solución implementa una arquitectura desacoplada de 2 microservicios con pat
 
 Cada microservicio implementa **Clean Architecture** estructurado en cuatro capas concéntricas con inversión de dependencias:
 
-![Clean Architecture](docs/Diagrama%20Clean%20Architecture.png)
+![Clean Architecture](docs/diagrama-clean-architecture.png)
 
 - **Domain:** Entidades puras POCO (`Cliente`, `Persona`, `Cuenta`, `Movimiento`), reglas de negocio y puertos (interfaces). Cero dependencias externas.
 - **Application:** Casos de uso, orquestación, DTOs y validadores de negocio.
@@ -82,7 +82,7 @@ Cada microservicio implementa **Clean Architecture** estructurado en cuatro capa
 
 PostgreSQL 16 con dos bases de datos independientes (`devsu_clientes` y `devsu_cuentas`), restricciones de integridad física (`CHECK`) y claves foráneas:
 
-![Modelo de Base de Datos](docs/Diagrama%20BD.png)
+![Modelo de Base de Datos](docs/diagrama-bd.png)
 
 El script DDL consolidado para recrear toda la estructura se encuentra en [`BaseDatos.sql`](BaseDatos.sql).
 
@@ -92,7 +92,7 @@ El script DDL consolidado para recrear toda la estructura se encuentra en [`Base
 
 Ciclo de vida de una transacción financiera (`POST /movimientos`), validando saldo disponible, cupo diario acumulado y concurrencia optimista:
 
-![Diagrama de Secuencia Transaccional](docs/Diagrama%20Secuencia%20Transaccional.png)
+![Diagrama de Secuencia Transaccional](docs/diagrama-secuencia-transaccional.png)
 
 ---
 
@@ -100,7 +100,7 @@ Ciclo de vida de una transacción financiera (`POST /movimientos`), validando sa
 
 Sincronización eventual entre servicios mediante eventos de RabbitMQ para alimentar proyecciones locales de lectura rápida en el reporte de estado de cuenta:
 
-![Reporte CQRS](docs/Diagrama%20Reporte%20CQRS.png)
+![Reporte CQRS](docs/diagrama-reporte-cqrs.png)
 
 ---
 
@@ -126,7 +126,7 @@ El proyecto cuenta con instrumentación **OpenTelemetry** completa integrada nat
 
 Se incluye la colección oficial con los casos de uso automatizados: [`devsu-banking.postman_collection.json`](devsu-banking.postman_collection.json).
 
-![Validación en Postman](docs/Postman.png)
+![Validación en Postman](docs/postman.png)
 
 ### Ejecución por consola (Newman CLI):
 ```bash
