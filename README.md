@@ -13,7 +13,11 @@ Se ofrecen dos alternativas para evaluar el proyecto: directamente en la nube (s
 Los microservicios se encuentran desplegados y listos para probar:
 
 - **Swagger Clientes:** [https://clientes.launch.lat/swagger](https://clientes.launch.lat/swagger)
+- **API Clientes:** `https://clientes.launch.lat/clientes`
 - **Swagger Cuentas y Movimientos:** [https://cuentas.launch.lat/swagger](https://cuentas.launch.lat/swagger)
+- **API Cuentas:** `https://cuentas.launch.lat/cuentas`
+- **API Movimientos:** `https://cuentas.launch.lat/movimientos`
+- **API Reportes:** `https://cuentas.launch.lat/reportes?fecha=2022-01-01,2026-12-31&cliente=Jose Lema`
 
 Para validar con **Postman**, solo se debe importar la colección [`devsu-banking.postman_collection.json`](devsu-banking.postman_collection.json) y apuntar las peticiones a estos dominios públicos.
 
@@ -42,6 +46,20 @@ Para validar con **Postman**, solo se debe importar la colección [`devsu-bankin
    docker compose down
    ```
    *(o con `detener.bat` en Windows / `./detener.sh` en Linux).*
+
+### 🌐 Tabla Comparativa de Direcciones
+
+| Servicio / Endpoint | En la Nube (Producción) | En Local (Docker) |
+| :--- | :--- | :--- |
+| **API Clientes** | `https://clientes.launch.lat/clientes` | `http://localhost:8081/clientes` |
+| **Swagger Clientes** | [https://clientes.launch.lat/swagger](https://clientes.launch.lat/swagger) | [http://localhost:8081/swagger](http://localhost:8081/swagger) |
+| **API Cuentas** | `https://cuentas.launch.lat/cuentas` | `http://localhost:8083/cuentas` |
+| **API Movimientos** | `https://cuentas.launch.lat/movimientos` | `http://localhost:8083/movimientos` |
+| **API Reportes (Estado de Cuenta)** | `https://cuentas.launch.lat/reportes` | `http://localhost:8083/reportes` |
+| **Swagger Cuentas y Reportes** | [https://cuentas.launch.lat/swagger](https://cuentas.launch.lat/swagger) | [http://localhost:8083/swagger](http://localhost:8083/swagger) |
+| **.NET Aspire Dashboard (Trazas)** | — | [http://localhost:18888](http://localhost:18888) |
+| **RabbitMQ Management** | — | [http://localhost:15672](http://localhost:15672) |
+| **Visores de Base de Datos (PGWeb)** | — | [http://localhost:8089](http://localhost:8089) / [:8090](http://localhost:8090) |
 
 ---
 
