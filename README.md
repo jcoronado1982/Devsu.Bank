@@ -156,14 +156,37 @@ Se incluye la colección oficial con los casos de uso automatizados: [`devsu-ban
 
 ## 🧪 Pruebas Automatizadas (.NET)
 
-Con el SDK de .NET 9 instalado, se ejecutan todas las pruebas con:
+La solución cuenta con **58 pruebas automatizadas** que validan la lógica de negocio, reglas de dominio y cumplimiento de Clean Architecture sin dependencias externas, además de pruebas de integración end-to-end.
+
+Se puede ejecutar fácilmente según el entorno que dispongas:
+
+### Opción A: Con 1 solo comando / clic (Con o sin .NET instalado)
+Los scripts detectan automáticamente si dispones del SDK de .NET 9 en tu sistema. Si no lo tienes instalado, ejecutan las pruebas limpiamente a través de un contenedor oficial de .NET:
+- **Windows:** Doble clic en `probar.bat`
+- **Linux / macOS:** Ejecutar `./probar.sh`
+
+### Opción B: Por consola con .NET SDK
+Si dispones del SDK de .NET 9 instalado:
+
 ```bash
+# 1. Pruebas Unitarias y de Arquitectura (58 pruebas requeridas por la prueba técnica):
+# Se ejecutan 100% en memoria en ~2 segundos sin requerir bases de datos ni Docker:
+dotnet test --filter "FullyQualifiedName!~Integration"
+
+# O ejecutando cada proyecto individualmente:
+dotnet test tests/ClienteService.UnitTests
+dotnet test tests/CuentaMovimientoService.UnitTests
+dotnet test tests/ArchitectureTests
+
+# 2. Suite Completa (incluyendo Integración con Testcontainers contra Postgres efímero):
 dotnet test
 ```
 
-- **Unitarias:** Dominio de `Cliente` y reglas de negocio de `MovimientoService`.
-- **Integración:** Flujo bancario completo con base de datos real en Testcontainers (`BankingFlowIntegrationTests`).
-- **Arquitectura:** Verificación automática de reglas de Clean Architecture con `NetArchTest`.
+### Cobertura de las Pruebas:
+- **`ClienteService.UnitTests` (13 pruebas):** Reglas de dominio de `Cliente` y `Persona`, hasheo de contraseñas con BCrypt y validación de estados.
+- **`CuentaMovimientoService.UnitTests` (35 pruebas):** Creación de cuentas, transacciones financieras de depósitos y retiros, validación de saldo insuficiente (`"Saldo no disponible"`), y control de cupo diario acumulado de retiros ($1,000.00).
+- **`ArchitectureTests` (10 pruebas):** Verificación automática con `NetArchTest` de las reglas de Clean Architecture (las capas de Dominio y Aplicación no tienen dependencias hacia la Infraestructura o API).
+- **`CuentaMovimientoService.IntegrationTests` (10 pruebas):** Flujo bancario transaccional de extremo a extremo contra PostgreSQL y RabbitMQ efímeros vía Testcontainers.
 
 ---
 
@@ -187,6 +210,8 @@ El proyecto cuenta con un pipeline automatizado en **Azure DevOps** ([`azure-pip
 - `BaseDatos.sql`: Script DDL físico de PostgreSQL.
 - `devsu-banking.postman_collection.json`: Colección de pruebas de Postman.
 - `docker-compose.yml`: Orquestador de contenedores.
+- `levantar.sh` / `levantar.bat`: Scripts de arranque automático de la solución.
+- `probar.sh` / `probar.bat`: Scripts de ejecución automática de las 58 pruebas.
 
 ---
 
