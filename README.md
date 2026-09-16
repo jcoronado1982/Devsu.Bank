@@ -156,5 +156,4 @@ dotnet test
 - `docs/`: Diagramas de arquitectura y capturas del sistema.
 - `BaseDatos.sql`: Script DDL físico de PostgreSQL.
 - `devsu-banking.postman_collection.json`: Colección de pruebas de Postman.
-- `OBJETIVO.md`: Enunciado y requerimientos oficiales de la prueba técnica.
 - `docker-compose.yml`: Orquestador de contenedores.
